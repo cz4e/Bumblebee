@@ -66,20 +66,13 @@ assign ifu_need_flush   = i_csr_trap_flush
                         | i_iq_uc_flush
                         | i_bpu_flush; 
 //
-wire [3 : 0] i_ifu_flush_sel = {i_bpu_flush, i_iq_flush, i_iq_uc_flush, ifu_exu_flush_occur, i_csr_trap_flush};
-wire [`CORE_PC_WIDTH - 1 : 0] o_ifu_sel_flush_addr;
-
-mux5_module #(
-    .DATA_WIDTH(`CORE_PC_WIDTH)
-) ifu_flush_addr_mux5 (
-    .mux5_sel (i_ifu_flush_sel         ),
-    .mux5_din0(i_csr_trap_addr         ),
-    .mux5_din1(i_ifu_sel_exu_flush_addr),
-    .mux5_din2(i_iq_uc_pc_addr         ),
-    .mux5_din3(i_iq_pc_addr            ),
-    .mux5_din4(i_bpu_pc_addr           ),
-    .mux5_dout(o_ifu_sel_flush_addr    )
-);
+wire [4 : 0] i_ifu_flush_sel = {i_bpu_flush, i_iq_flush, i_iq_uc_flush, ifu_exu_flush_occur, i_csr_trap_flush};
+wire [4 : 0] ifu_flush_vec = func_sel_vec(i_ifu_flush_sel);
+wire [`CORE_PC_WIDTH - 1 : 0] o_ifu_sel_flush_addr = ({`CORE_PC_WIDTH{(ifu_flush_vec[0])}} & i_csr_trap_addr         )
+                                                   | ({`CORE_PC_WIDTH{(ifu_flush_vec[1])}} & i_ifu_sel_exu_flush_addr)
+                                                   | ({`CORE_PC_WIDTH{(ifu_flush_vec[2])}} & i_iq_uc_pc_addr         )
+                                                   | ({`CORE_PC_WIDTH{(ifu_flush_vec[3])}} & i_iq_pc_addr            )
+                                                   | ({`CORE_PC_WIDTH{(ifu_flush_vec[4])}} & i_bpu_pc_addr           );
 
 wire i_ifu_pc_addr_ena = ifu_need_gen;
 wire [`CORE_PC_WIDTH - 1 : 0] i_ifu_pc_addr_nxt = ifu_need_flush ? o_ifu_sel_flush_addr
@@ -166,6 +159,20 @@ function func_rob_old;
                  : (rob_id_a[`ROB_ID_WIDTH - 2 : 0] < rob_id_b[`ROB_ID_WIDTH - 2 : 0]);
 endfunction
 
+function [4 : 0] func_sel_vec;
+    input [4 : 0] bit_map;
+
+    casex (bit_map)
+        5'bxxxx1: func_sel_vec = 5'b00001;
+        5'bxxx10: func_sel_vec = 5'b00010;
+        5'bxx100: func_sel_vec = 5'b00100;
+        5'bx1000: func_sel_vec = 5'b01000;
+        5'b10000: func_sel_vec = 5'b10000;
+        default: 
+                func_sel_vec = 5'b00000;
+    endcase
+
+endfunction
 
 endmodule   //  ifu_module
 
