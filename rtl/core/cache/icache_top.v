@@ -40,6 +40,7 @@ module icache_top_module (
     output  [2                      : 0]    o_cache_ifu_id,
     output                                  o_cache_ifu_stall,
     output                                  o_itlb_rob_ifu_done,
+    output                                  o_itlb_rob_flush_done,
 
     input                                   clk,
     input                                   rst_n
@@ -142,7 +143,7 @@ icache_module icache (
     .rst_n             (rst_n)
 );
 
-assign o_icache_mem_vld = (~o_icache_hit);
+assign o_icache_mem_vld = (i_icache_req & (~o_icache_hit));
 assign o_icache_mem_paddr = icache_paddr;
 
 //

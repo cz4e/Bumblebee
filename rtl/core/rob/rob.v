@@ -2,190 +2,193 @@
 
 module rob_module (
     input                                               i_csr_trap_flush,
-    input   [1                  : 0]                    i_csr_rv_mode,
+    input   [1                          : 0]            i_csr_rv_mode,
     input                                               i_exu_mis_flush,
-    input   [`ROB_ID_WIDTH - 1  : 0]                    i_exu_mis_rob_id,
+    input   [`ROB_ID_WIDTH - 1          : 0]            i_exu_mis_rob_id,
     input                                               i_exu_ls_flush,
-    input   [`ROB_ID_WIDTH - 1  : 0]                    i_exu_ls_rob_id,
+    input   [`ROB_ID_WIDTH - 1          : 0]            i_exu_ls_rob_id,
     
-    input   [3                  : 0]                    i_dsp_rob_vld,
-    input   [`ROB_ID_WIDTH - 1  : 0]                    i_dsp_rob_rob_id_0,
+    input   [3                          : 0]            i_dsp_rob_vld,
+    input   [`ROB_ID_WIDTH - 1          : 0]            i_dsp_rob_rob_id_0,
     input                                               i_dsp_rob_ld_vld_0,
-    input   [`LOAD_BUFFER_ID_WIDTH - 1 : 0]             i_dsp_rob_ld_id_0,
+    input   [`LBUFF_ID_WIDTH - 1        : 0]            i_dsp_rob_ld_id_0,
     input                                               i_dsp_rob_st_vld_0,
-    input   [`STORE_BUFFER_ID_WIDTH - 1 : 0]            i_dsp_rob_st_id_0,
+    input   [`SBUFF_ID_WIDTH - 1        : 0]            i_dsp_rob_st_id_0,
 
-    input   [`ROB_ID_WIDTH - 1  : 0]                    i_dsp_rob_rob_id_1,
+    input   [`ROB_ID_WIDTH - 1          : 0]            i_dsp_rob_rob_id_1,
     input                                               i_dsp_rob_ld_vld_1,
-    input   [`LOAD_BUFFER_ID_WIDTH - 1 : 0]             i_dsp_rob_ld_id_1,
+    input   [`LBUFF_ID_WIDTH - 1        : 0]            i_dsp_rob_ld_id_1,
     input                                               i_dsp_rob_st_vld_1,
-    input   [`STORE_BUFFER_ID_WIDTH - 1 : 0]            i_dsp_rob_st_id_1,
+    input   [`SBUFF_ID_WIDTH - 1        : 0]            i_dsp_rob_st_id_1,
 
-    input   [`ROB_ID_WIDTH - 1  : 0]                    i_dsp_rob_rob_id_2,
+    input   [`ROB_ID_WIDTH - 1          : 0]            i_dsp_rob_rob_id_2,
     input                                               i_dsp_rob_ld_vld_2,
-    input   [`LOAD_BUFFER_ID_WIDTH - 1 : 0]             i_dsp_rob_ld_id_2,
+    input   [`LBUFF_ID_WIDTH - 1        : 0]            i_dsp_rob_ld_id_2,
     input                                               i_dsp_rob_st_vld_2,
-    input   [`STORE_BUFFER_ID_WIDTH - 1 : 0]            i_dsp_rob_st_id_2,
+    input   [`SBUFF_ID_WIDTH - 1        : 0]            i_dsp_rob_st_id_2,
 
-    input   [`ROB_ID_WIDTH - 1  : 0]                    i_dsp_rob_rob_id_3,
+    input   [`ROB_ID_WIDTH - 1          : 0]            i_dsp_rob_rob_id_3,
     input                                               i_dsp_rob_ld_vld_3,
-    input   [`LOAD_BUFFER_ID_WIDTH - 1 : 0]             i_dsp_rob_ld_id_3,
+    input   [`LBUFF_ID_WIDTH - 1        : 0]            i_dsp_rob_ld_id_3,
     input                                               i_dsp_rob_st_vld_3,
-    input   [`STORE_BUFFER_ID_WIDTH - 1 : 0]            i_dsp_rob_st_id_3,
+    input   [`SBUFF_ID_WIDTH - 1        : 0]            i_dsp_rob_st_id_3,
 
-    input   [3                  : 0]                    i_dsp_rob_len,
+    input   [3                          : 0]            i_dsp_rob_len,
     input                                               i_dsp_rob_dst_vld_0,
     input                                               i_dsp_rob_dst_vld_1,
     input                                               i_dsp_rob_dst_vld_2,
     input                                               i_dsp_rob_dst_vld_3,
-    input   [`ARF_CODE_WIDTH - 1 : 0]                   i_dsp_rob_dst_arf_code_0,
-    input   [`ARF_CODE_WIDTH - 1 : 0]                   i_dsp_rob_dst_arf_code_1,
-    input   [`ARF_CODE_WIDTH - 1 : 0]                   i_dsp_rob_dst_arf_code_2,
-    input   [`ARF_CODE_WIDTH - 1 : 0]                   i_dsp_rob_dst_arf_code_3,
-    input   [`PRF_CODE_WIDTH - 1 : 0]                   i_dsp_rob_dst_prf_code_0,
-    input   [`PRF_CODE_WIDTH - 1 : 0]                   i_dsp_rob_dst_prf_code_1,
-    input   [`PRF_CODE_WIDTH - 1 : 0]                   i_dsp_rob_dst_prf_code_2,
-    input   [`PRF_CODE_WIDTH - 1 : 0]                   i_dsp_rob_dst_prf_code_3,
-    input   [`PRF_CODE_WIDTH - 1 : 0]                   i_dsp_rob_dst_pprf_code_0,
-    input   [`PRF_CODE_WIDTH - 1 : 0]                   i_dsp_rob_dst_pprf_code_1,
-    input   [`PRF_CODE_WIDTH - 1 : 0]                   i_dsp_rob_dst_pprf_code_2,
-    input   [`PRF_CODE_WIDTH - 1 : 0]                   i_dsp_rob_dst_pprf_code_3,
-    input   [`MEM_SIZE_WIDTH - 1 : 0]                   i_dsp_rob_mem_size_0,
-    input   [`MEM_SIZE_WIDTH - 1 : 0]                   i_dsp_rob_mem_size_1,
-    input   [`MEM_SIZE_WIDTH - 1 : 0]                   i_dsp_rob_mem_size_2,
-    input   [`MEM_SIZE_WIDTH - 1 : 0]                   i_dsp_rob_mem_size_3,
-    input   [`RENINFO_WIDTH - 1  : 0]                   i_dsp_rob_reninfo_bus_0,
-    input   [`RENINFO_WIDTH - 1  : 0]                   i_dsp_rob_reninfo_bus_1,
-    input   [`RENINFO_WIDTH - 1  : 0]                   i_dsp_rob_reninfo_bus_2,
-    input   [`RENINFO_WIDTH - 1  : 0]                   i_dsp_rob_reninfo_bus_3,
-    input   [`PREDINFO_WIDTH - 1 : 0]                   i_dsp_rob_predinfo_bus_0,
-    input   [`PREDINFO_WIDTH - 1 : 0]                   i_dsp_rob_predinfo_bus_1,
-    input   [`PREDINFO_WIDTH - 1 : 0]                   i_dsp_rob_predinfo_bus_2,
-    input   [`PREDINFO_WIDTH - 1 : 0]                   i_dsp_rob_predinfo_bus_3,
-    input   [`ROB_ID_WIDTH - 1 : 0]                     i_dsp_rob_dsp_id,
-    input   [`ROB_ID_WIDTH - 1 : 0]                     i_dsp_rob_ret_id,
-    input   [`CORE_PC_WIDTH - 1 : 0]                    i_dsp_rob_addr_0,
-    input   [`CORE_PC_WIDTH - 1 : 0]                    i_dsp_rob_addr_1,
-    input   [`CORE_PC_WIDTH - 1 : 0]                    i_dsp_rob_addr_2,
-    input   [`CORE_PC_WIDTH - 1 : 0]                    i_dsp_rob_addr_3,
-    input   [`CORE_PC_WIDTH - 1 : 0]                    i_dsp_rob_taddr_0,
-    input   [`CORE_PC_WIDTH - 1 : 0]                    i_dsp_rob_taddr_1,
-    input   [`CORE_PC_WIDTH - 1 : 0]                    i_dsp_rob_taddr_2,
-    input   [`CORE_PC_WIDTH - 1 : 0]                    i_dsp_rob_taddr_3,
-    input   [`INSTR_WIDTH - 1   : 0]                    i_dsp_rob_instr_0,
-    input   [`INSTR_WIDTH - 1   : 0]                    i_dsp_rob_instr_1,
-    input   [`INSTR_WIDTH - 1   : 0]                    i_dsp_rob_instr_2,
-    input   [`INSTR_WIDTH - 1   : 0]                    i_dsp_rob_instr_3,
+    input   [`ARF_CODE_WIDTH - 1        : 0]            i_dsp_rob_dst_arf_code_0,
+    input   [`ARF_CODE_WIDTH - 1        : 0]            i_dsp_rob_dst_arf_code_1,
+    input   [`ARF_CODE_WIDTH - 1        : 0]            i_dsp_rob_dst_arf_code_2,
+    input   [`ARF_CODE_WIDTH - 1        : 0]            i_dsp_rob_dst_arf_code_3,
+    input   [`PRF_CODE_WIDTH - 1        : 0]            i_dsp_rob_dst_prf_code_0,
+    input   [`PRF_CODE_WIDTH - 1        : 0]            i_dsp_rob_dst_prf_code_1,
+    input   [`PRF_CODE_WIDTH - 1        : 0]            i_dsp_rob_dst_prf_code_2,
+    input   [`PRF_CODE_WIDTH - 1        : 0]            i_dsp_rob_dst_prf_code_3,
+    input   [`PRF_CODE_WIDTH - 1        : 0]            i_dsp_rob_dst_pprf_code_0,
+    input   [`PRF_CODE_WIDTH - 1        : 0]            i_dsp_rob_dst_pprf_code_1,
+    input   [`PRF_CODE_WIDTH - 1        : 0]            i_dsp_rob_dst_pprf_code_2,
+    input   [`PRF_CODE_WIDTH - 1        : 0]            i_dsp_rob_dst_pprf_code_3,
+    input   [`DECINFO_WIDTH - 1         : 0]            i_dsp_rob_decinfo_bus_0,
+    input   [`DECINFO_WIDTH - 1         : 0]            i_dsp_rob_decinfo_bus_1,
+    input   [`DECINFO_WIDTH - 1         : 0]            i_dsp_rob_decinfo_bus_2,
+    input   [`DECINFO_WIDTH - 1         : 0]            i_dsp_rob_decinfo_bus_3,
+    input   [`PREDINFO_WIDTH - 1        : 0]            i_dsp_rob_predinfo_bus_0,
+    input   [`PREDINFO_WIDTH - 1        : 0]            i_dsp_rob_predinfo_bus_1,
+    input   [`PREDINFO_WIDTH - 1        : 0]            i_dsp_rob_predinfo_bus_2,
+    input   [`PREDINFO_WIDTH - 1        : 0]            i_dsp_rob_predinfo_bus_3,
+    input   [`ROB_ID_WIDTH - 1          : 0]            i_dsp_rob_dsp_id,
+    input   [`ROB_ID_WIDTH - 1          : 0]            i_dsp_rob_ret_id,
+    input   [`CORE_PC_WIDTH - 1         : 0]            i_dsp_rob_addr_0,
+    input   [`CORE_PC_WIDTH - 1         : 0]            i_dsp_rob_addr_1,
+    input   [`CORE_PC_WIDTH - 1         : 0]            i_dsp_rob_addr_2,
+    input   [`CORE_PC_WIDTH - 1         : 0]            i_dsp_rob_addr_3,
+    input   [`CORE_PC_WIDTH - 1         : 0]            i_dsp_rob_taddr_0,
+    input   [`CORE_PC_WIDTH - 1         : 0]            i_dsp_rob_taddr_1,
+    input   [`CORE_PC_WIDTH - 1         : 0]            i_dsp_rob_taddr_2,
+    input   [`CORE_PC_WIDTH - 1         : 0]            i_dsp_rob_taddr_3,
+    input   [`INSTR_WIDTH - 1           : 0]            i_dsp_rob_instr_0,
+    input   [`INSTR_WIDTH - 1           : 0]            i_dsp_rob_instr_1,
+    input   [`INSTR_WIDTH - 1           : 0]            i_dsp_rob_instr_2,
+    input   [`INSTR_WIDTH - 1           : 0]            i_dsp_rob_instr_3,
 
     input                                               i_exu_rob_vld_0,
     input                                               i_exu_rob_vld_1,
     input                                               i_exu_rob_vld_2,
     input                                               i_exu_rob_vld_3,
-    input   [`ROB_ID_WIDTH - 1 : 0]                     i_exu_rob_rob_id_0,
-    input   [`ROB_ID_WIDTH - 1 : 0]                     i_exu_rob_rob_id_1,
-    input   [`ROB_ID_WIDTH - 1 : 0]                     i_exu_rob_rob_id_2,
-    input   [`ROB_ID_WIDTH - 1 : 0]                     i_exu_rob_rob_id_3,
+    input   [`ROB_ID_WIDTH - 1          : 0]            i_exu_rob_rob_id_0,
+    input   [`ROB_ID_WIDTH - 1          : 0]            i_exu_rob_rob_id_1,
+    input   [`ROB_ID_WIDTH - 1          : 0]            i_exu_rob_rob_id_2,
+    input   [`ROB_ID_WIDTH - 1          : 0]            i_exu_rob_rob_id_3,
     input                                               i_exu_rob_done_0,
     input                                               i_exu_rob_done_1,
     input                                               i_exu_rob_done_2,
     input                                               i_exu_rob_done_3,
-    input   [`EXCEPTION_CODE_WIDTH - 1 : 0]             i_exu_rob_excp_code_0,
-    input   [`EXCEPTION_CODE_WIDTH - 1 : 0]             i_exu_rob_excp_code_1,
-    input   [`EXCEPTION_CODE_WIDTH - 1 : 0]             i_exu_rob_excp_code_2,
-    input   [`EXCEPTION_CODE_WIDTH - 1 : 0]             i_exu_rob_excp_code_3,
-    input   [31                : 0]                     i_exu_rob_fence_src1,
-    input   [31                : 0]                     i_exu_rob_fence_src2,
-    input   [`ROB_ID_WIDTH - 1 : 0]                     i_exu_rob_rob_id_addr_0,
-    input   [`ROB_ID_WIDTH - 1 : 0]                     i_exu_rob_rob_id_addr_1,
-    input   [`ROB_ID_WIDTH - 1 : 0]                     i_exu_rob_rob_id_addr_3,
+    input   [`EXCEPTION_CODE_WIDTH - 1  : 0]            i_exu_rob_excp_code_0,
+    input   [`EXCEPTION_CODE_WIDTH - 1  : 0]            i_exu_rob_excp_code_1,
+    input   [`EXCEPTION_CODE_WIDTH - 1  : 0]            i_exu_rob_excp_code_2,
+    input   [`EXCEPTION_CODE_WIDTH - 1  : 0]            i_exu_rob_excp_code_3,
+    input   [31                         : 0]            i_exu_rob_fence_src1,
+    input   [31                         : 0]            i_exu_rob_fence_src2,
+    input   [`ROB_ID_WIDTH - 1          : 0]            i_exu_rob_rob_id_addr_0,
+    input   [`ROB_ID_WIDTH - 1          : 0]            i_exu_rob_rob_id_addr_1,
+    input   [`ROB_ID_WIDTH - 1          : 0]            i_exu_rob_rob_id_addr_3,
 
-    
     input                                               i_itlb_rob_flush_done,
     input                                               i_dtlb_rob_flush_done,
     input                                               i_mmu_rob_flush_done,
-    input                                               i_exu_rob_st_ret_done,
-    input                                               i_ext_rob_int_vld,                     
+    input                                               i_exu_rob_st_ret_done,                 
     
-    output  [3                  : 0]                    o_rob_ren_ret_vld,
+    output  [3                          : 0]            o_rob_ren_ret_vld,
     output                                              o_rob_ren_ret_dst_vld_0,
-    output  [`ARF_CODE_WIDTH - 1 : 0]                   o_rob_ren_ret_arf_code_0,
-    output  [`PRF_CODE_WIDTH - 1 : 0]                   o_rob_ren_ret_prf_code_0,
+    output  [`ARF_CODE_WIDTH - 1        : 0]            o_rob_ren_ret_arf_code_0,
+    output  [`PRF_CODE_WIDTH - 1        : 0]            o_rob_ren_ret_prf_code_0,
     output                                              o_rob_ren_ret_dst_vld_1,
-    output  [`ARF_CODE_WIDTH - 1 : 0]                   o_rob_ren_ret_arf_code_1,
-    output  [`PRF_CODE_WIDTH - 1 : 0]                   o_rob_ren_ret_prf_code_1,
+    output  [`ARF_CODE_WIDTH - 1        : 0]            o_rob_ren_ret_arf_code_1,
+    output  [`PRF_CODE_WIDTH - 1        : 0]            o_rob_ren_ret_prf_code_1,
     output                                              o_rob_ren_ret_dst_vld_2,
-    output  [`ARF_CODE_WIDTH - 1 : 0]                   o_rob_ren_ret_arf_code_2,
-    output  [`PRF_CODE_WIDTH - 1 : 0]                   o_rob_ren_ret_prf_code_2,
+    output  [`ARF_CODE_WIDTH - 1        : 0]            o_rob_ren_ret_arf_code_2,
+    output  [`PRF_CODE_WIDTH - 1        : 0]            o_rob_ren_ret_prf_code_2,
     output                                              o_rob_ren_ret_dst_vld_3,
-    output  [`ARF_CODE_WIDTH - 1 : 0]                   o_rob_ren_ret_arf_code_3,
-    output  [`PRF_CODE_WIDTH - 1 : 0]                   o_rob_ren_ret_prf_code_3,
+    output  [`ARF_CODE_WIDTH - 1        : 0]            o_rob_ren_ret_arf_code_3,
+    output  [`PRF_CODE_WIDTH - 1        : 0]            o_rob_ren_ret_prf_code_3,
 
-    output  [3                  : 0]                    o_rob_ren_rec_vld,
-    output  [`ARF_CODE_WIDTH - 1 : 0]                   o_rob_ren_rec_arf_code_0,
-    output  [`PRF_CODE_WIDTH - 1 : 0]                   o_rob_ren_rec_prf_code_0,
-    output  [`ARF_CODE_WIDTH - 1 : 0]                   o_rob_ren_rec_arf_code_1,
-    output  [`PRF_CODE_WIDTH - 1 : 0]                   o_rob_ren_rec_prf_code_1,
-    output  [`ARF_CODE_WIDTH - 1 : 0]                   o_rob_ren_rec_arf_code_2,
-    output  [`PRF_CODE_WIDTH - 1 : 0]                   o_rob_ren_rec_prf_code_2,
-    output  [`ARF_CODE_WIDTH - 1 : 0]                   o_rob_ren_rec_arf_code_3,
-    output  [`PRF_CODE_WIDTH - 1 : 0]                   o_rob_ren_rec_prf_code_3,
+    output  [3                          : 0]            o_rob_ren_rec_vld,
+    output  [`ARF_CODE_WIDTH - 1        : 0]            o_rob_ren_rec_arf_code_0,
+    output  [`PRF_CODE_WIDTH - 1        : 0]            o_rob_ren_rec_prf_code_0,
+    output  [`ARF_CODE_WIDTH - 1        : 0]            o_rob_ren_rec_arf_code_1,
+    output  [`PRF_CODE_WIDTH - 1        : 0]            o_rob_ren_rec_prf_code_1,
+    output  [`ARF_CODE_WIDTH - 1        : 0]            o_rob_ren_rec_arf_code_2,
+    output  [`PRF_CODE_WIDTH - 1        : 0]            o_rob_ren_rec_prf_code_2,
+    output  [`ARF_CODE_WIDTH - 1        : 0]            o_rob_ren_rec_arf_code_3,
+    output  [`PRF_CODE_WIDTH - 1        : 0]            o_rob_ren_rec_prf_code_3,
 
-    output  [3                  : 0]                    o_rob_ren_mis_vld,
-    output  [`ARF_CODE_WIDTH - 1 : 0]                   o_rob_ren_mis_arf_code_0,
-    output  [`PRF_CODE_WIDTH - 1 : 0]                   o_rob_ren_mis_prf_code_0,
-    output  [`ARF_CODE_WIDTH - 1 : 0]                   o_rob_ren_mis_arf_code_1,
-    output  [`PRF_CODE_WIDTH - 1 : 0]                   o_rob_ren_mis_prf_code_1,
-    output  [`ARF_CODE_WIDTH - 1 : 0]                   o_rob_ren_mis_arf_code_2,
-    output  [`PRF_CODE_WIDTH - 1 : 0]                   o_rob_ren_mis_prf_code_2,
-    output  [`ARF_CODE_WIDTH - 1 : 0]                   o_rob_ren_mis_arf_code_3,
-    output  [`PRF_CODE_WIDTH - 1 : 0]                   o_rob_ren_mis_prf_code_3,
+    output  [3                          : 0]            o_rob_ren_mis_vld,
+    output  [`ARF_CODE_WIDTH - 1        : 0]            o_rob_ren_mis_arf_code_0,
+    output  [`PRF_CODE_WIDTH - 1        : 0]            o_rob_ren_mis_prf_code_0,
+    output  [`ARF_CODE_WIDTH - 1        : 0]            o_rob_ren_mis_arf_code_1,
+    output  [`PRF_CODE_WIDTH - 1        : 0]            o_rob_ren_mis_prf_code_1,
+    output  [`ARF_CODE_WIDTH - 1        : 0]            o_rob_ren_mis_arf_code_2,
+    output  [`PRF_CODE_WIDTH - 1        : 0]            o_rob_ren_mis_prf_code_2,
+    output  [`ARF_CODE_WIDTH - 1        : 0]            o_rob_ren_mis_arf_code_3,
+    output  [`PRF_CODE_WIDTH - 1        : 0]            o_rob_ren_mis_prf_code_3,
 
     output                                              o_rob_rsv_csr_ret,
     output                                              o_rob_rsv_fence_ret,
     output                                              o_rob_csr_int_vld,
     output                                              o_rob_csr_exc_vld,
-    output  [`EXCEPTION_CODE_WIDTH - 1 : 0]             o_rob_csr_excp_code,
+    output  [`EXCEPTION_CODE_WIDTH - 1  : 0]            o_rob_csr_excp_code,
     output                                              o_rob_csr_len,
     output                                              o_rob_csr_mret,
     output                                              o_rob_csr_sret,
     output                                              o_rob_csr_uret,
     output                                              o_rob_csr_wfi,
     
-    output  [3                 : 0]                     o_rob_dsp_ret_vld,
-    output  [`ROB_ID_WIDTH - 1 : 0]                     o_rob_dsp_ret_rob_id_0,
+    output  [3                          : 0]            o_rob_dsp_ret_vld,
+    output  [`ROB_ID_WIDTH - 1          : 0]            o_rob_dsp_ret_rob_id_0,
     output                                              o_rob_dsp_ret_ld_vld_0,
+    output  [`LBUFF_ID_WIDTH - 1        : 0]            o_rob_dsp_ret_ld_id_0,
     output                                              o_rob_dsp_ret_st_vld_0,
-    output  [`ROB_ID_WIDTH - 1 : 0]                     o_rob_dsp_ret_rob_id_1,
+    output  [`SBUFF_ID_WIDTH - 1        : 0]            o_rob_dsp_ret_st_id_0,
+    output  [`ROB_ID_WIDTH - 1          : 0]            o_rob_dsp_ret_rob_id_1,
     output                                              o_rob_dsp_ret_ld_vld_1,
+    output  [`LBUFF_ID_WIDTH - 1        : 0]            o_rob_dsp_ret_ld_id_1,
     output                                              o_rob_dsp_ret_st_vld_1,
-    output  [`ROB_ID_WIDTH - 1 : 0]                     o_rob_dsp_ret_rob_id_2,
+    output  [`SBUFF_ID_WIDTH - 1        : 0]            o_rob_dsp_ret_st_id_1,
+    output  [`ROB_ID_WIDTH - 1          : 0]            o_rob_dsp_ret_rob_id_2,
     output                                              o_rob_dsp_ret_ld_vld_2,
+    output  [`LBUFF_ID_WIDTH - 1        : 0]            o_rob_dsp_ret_ld_id_2,
     output                                              o_rob_dsp_ret_st_vld_2,
-    output  [`ROB_ID_WIDTH - 1 : 0]                     o_rob_dsp_ret_rob_id_3,
+    output  [`SBUFF_ID_WIDTH - 1        : 0]            o_rob_dsp_ret_st_id_2,
+    output  [`ROB_ID_WIDTH - 1          : 0]            o_rob_dsp_ret_rob_id_3,
     output                                              o_rob_dsp_ret_ld_vld_3,
+    output  [`LBUFF_ID_WIDTH - 1        : 0]            o_rob_dsp_ret_ld_id_3,
     output                                              o_rob_dsp_ret_st_vld_3,
+    output  [`SBUFF_ID_WIDTH - 1        : 0]            o_rob_dsp_ret_st_id_3,
 
     output                                              o_rob_dsp_mis_ld_vld,
-    output  [`LOAD_BUFFER_ID_WIDTH - 1 : 0]             o_rob_dsp_mis_ld_id,
+    output  [`LBUFF_ID_WIDTH - 1        : 0]            o_rob_dsp_mis_ld_id,
     output                                              o_rob_dsp_mis_st_vld,
-    output  [`STORE_BUFFER_ID_WIDTH - 1 : 0]            o_rob_dsp_mis_st_id,
+    output  [`SBUFF_ID_WIDTH - 1        : 0]            o_rob_dsp_mis_st_id,
 
     
-    output  [`CORE_PC_WIDTH - 1 : 0]                    o_rob_exu_addr_0,
-    output  [`CORE_PC_WIDTH - 1 : 0]                    o_rob_exu_addr_1,
-    output  [`CORE_PC_WIDTH - 1 : 0]                    o_rob_exu_addr_3,
-    output  [`CORE_PC_WIDTH - 1 : 0]                    o_rob_csr_trap_addr,
-    output  [`INSTR_WIDTH - 1   : 0]                    o_rob_csr_instr,
+    output  [`CORE_PC_WIDTH - 1         : 0]            o_rob_exu_addr_0,
+    output  [`CORE_PC_WIDTH - 1         : 0]            o_rob_exu_addr_1,
+    output  [`CORE_PC_WIDTH - 1         : 0]            o_rob_exu_addr_3,
+    output  [`CORE_PC_WIDTH - 1         : 0]            o_rob_csr_trap_addr,
+    output  [`CORE_PC_WIDTH - 1         : 0]            o_rob_exu_ls_addr,
+    output  [`INSTR_WIDTH - 1           : 0]            o_rob_csr_instr,
     output                                              o_low_power_state,
     output                                              o_rob_itlb_flush,
-    output  [31                 : 0]                    o_rob_itlb_src1,
-    output  [31                 : 0]                    o_rob_itlb_src2,
+    output  [31                         : 0]            o_rob_itlb_src1,
+    output  [31                         : 0]            o_rob_itlb_src2,
     output                                              o_rob_dtlb_flush,
-    output  [31                 : 0]                    o_rob_dtlb_src1,
-    output  [31                 : 0]                    o_rob_dtlb_src2,
+    output  [31                         : 0]            o_rob_dtlb_src1,
+    output  [31                         : 0]            o_rob_dtlb_src2,
     output                                              o_rob_mmu_flush,
-    output  [31                 : 0]                    o_rob_mmu_src1,
-    output  [31                 : 0]                    o_rob_mmu_src2,
+    output  [31                         : 0]            o_rob_mmu_src1,
+    output  [31                         : 0]            o_rob_mmu_src2,
     output                                              o_rob_csr_sfence_vma_flush,
     output                                              o_rob_exu_s_ret,
 
@@ -248,8 +251,7 @@ wire [`ROB_INST_INFO_WIDTH - 1 : 0] rob_inst_info_wdat_0 = {
                                                             ,   i_dsp_rob_ld_id_0
                                                             ,   i_dsp_rob_st_vld_0
                                                             ,   i_dsp_rob_st_id_0
-                                                            ,   i_dsp_rob_mem_size_0
-                                                            ,   i_dsp_rob_reninfo_bus_0[`DECINFO_WIDTH - 1 : 0]
+                                                            ,   i_dsp_rob_decinfo_bus_0
                                                             ,   i_dsp_rob_predinfo_bus_0
                                                             ,   i_dsp_rob_len[0]
                                                             ,   i_dsp_rob_instr_0
@@ -264,8 +266,7 @@ wire [`ROB_INST_INFO_WIDTH - 1 : 0] rob_inst_info_wdat_1 = {
                                                             ,   i_dsp_rob_ld_id_1
                                                             ,   i_dsp_rob_st_vld_1
                                                             ,   i_dsp_rob_st_id_1
-                                                            ,   i_dsp_rob_mem_size_1
-                                                            ,   i_dsp_rob_reninfo_bus_1[`DECINFO_WIDTH - 1 : 0]
+                                                            ,   i_dsp_rob_decinfo_bus_1
                                                             ,   i_dsp_rob_predinfo_bus_1
                                                             ,   i_dsp_rob_len[1]
                                                             ,   i_dsp_rob_instr_1
@@ -280,8 +281,7 @@ wire [`ROB_INST_INFO_WIDTH - 1 : 0] rob_inst_info_wdat_2 = {
                                                             ,   i_dsp_rob_ld_id_2
                                                             ,   i_dsp_rob_st_vld_2
                                                             ,   i_dsp_rob_st_id_2
-                                                            ,   i_dsp_rob_mem_size_2
-                                                            ,   i_dsp_rob_reninfo_bus_2[`DECINFO_WIDTH - 1 : 0]
+                                                            ,   i_dsp_rob_decinfo_bus_2
                                                             ,   i_dsp_rob_predinfo_bus_2
                                                             ,   i_dsp_rob_len[2]
                                                             ,   i_dsp_rob_instr_2
@@ -296,8 +296,7 @@ wire [`ROB_INST_INFO_WIDTH - 1 : 0] rob_inst_info_wdat_3 = {
                                                             ,   i_dsp_rob_ld_id_3
                                                             ,   i_dsp_rob_st_vld_3
                                                             ,   i_dsp_rob_st_id_3
-                                                            ,   i_dsp_rob_mem_size_3
-                                                            ,   i_dsp_rob_reninfo_bus_3[`DECINFO_WIDTH - 1 : 0]
+                                                            ,   i_dsp_rob_decinfo_bus_3
                                                             ,   i_dsp_rob_predinfo_bus_3
                                                             ,   i_dsp_rob_len[3]
                                                             ,   i_dsp_rob_instr_3
@@ -590,29 +589,34 @@ assign o_rob_dsp_mis_ld_id  = rob_inst_info_r[i_exu_mis_rob_id[`ROB_ID_WIDTH - 2
 assign o_rob_dsp_mis_st_vld = rob_inst_info_r[i_exu_mis_rob_id[`ROB_ID_WIDTH - 2 : 0]][`ROB_INST_INFO_ST_VLD];
 assign o_rob_dsp_mis_st_id  = rob_inst_info_r[i_exu_mis_rob_id[`ROB_ID_WIDTH - 2 : 0]][`ROB_INST_INFO_ST_ID ];
 
+assign o_rob_exu_ls_addr = rob_addr_r[i_exu_ls_rob_id[`ROB_ID_WIDTH - 2 : 0]][`CORE_PC_WIDTH - 1 : 0];
+
 assign o_rob_dsp_ret_vld      = o_rob_ren_ret_vld;
 assign o_rob_dsp_ret_rob_id_0 = rob_ret_sel_0;
 assign o_rob_dsp_ret_ld_vld_0 = rob_inst_info_r[rob_ret_sel_0[`ROB_ID_WIDTH - 2 : 0]][`ROB_INST_INFO_LD_VLD];
+assign o_rob_dsp_ret_ld_id_0  = rob_inst_info_r[rob_ret_sel_0[`ROB_ID_WIDTH - 2 : 0]][`ROB_INST_INFO_LD_ID];
 assign o_rob_dsp_ret_st_vld_0 = rob_inst_info_r[rob_ret_sel_0[`ROB_ID_WIDTH - 2 : 0]][`ROB_INST_INFO_ST_VLD];
+assign o_rob_dsp_ret_st_id_0  = rob_inst_info_r[rob_ret_sel_0[`ROB_ID_WIDTH - 2 : 0]][`ROB_INST_INFO_ST_ID];
 assign o_rob_dsp_ret_rob_id_1 = rob_ret_sel_1;
 assign o_rob_dsp_ret_ld_vld_1 = rob_inst_info_r[rob_ret_sel_1[`ROB_ID_WIDTH - 2 : 0]][`ROB_INST_INFO_LD_VLD];
+assign o_rob_dsp_ret_ld_id_1  = rob_inst_info_r[rob_ret_sel_1[`ROB_ID_WIDTH - 2 : 0]][`ROB_INST_INFO_LD_ID];
 assign o_rob_dsp_ret_st_vld_1 = rob_inst_info_r[rob_ret_sel_1[`ROB_ID_WIDTH - 2 : 0]][`ROB_INST_INFO_ST_VLD];
+assign o_rob_dsp_ret_st_id_1  = rob_inst_info_r[rob_ret_sel_1[`ROB_ID_WIDTH - 2 : 0]][`ROB_INST_INFO_ST_ID];
 assign o_rob_dsp_ret_rob_id_2 = rob_ret_sel_2;
 assign o_rob_dsp_ret_ld_vld_2 = rob_inst_info_r[rob_ret_sel_2[`ROB_ID_WIDTH - 2 : 0]][`ROB_INST_INFO_LD_VLD];
+assign o_rob_dsp_ret_ld_id_2  = rob_inst_info_r[rob_ret_sel_2[`ROB_ID_WIDTH - 2 : 0]][`ROB_INST_INFO_LD_ID];
 assign o_rob_dsp_ret_st_vld_2 = rob_inst_info_r[rob_ret_sel_2[`ROB_ID_WIDTH - 2 : 0]][`ROB_INST_INFO_ST_VLD];
+assign o_rob_dsp_ret_st_id_2  = rob_inst_info_r[rob_ret_sel_2[`ROB_ID_WIDTH - 2 : 0]][`ROB_INST_INFO_ST_ID];
 assign o_rob_dsp_ret_rob_id_3 = rob_ret_sel_3;
 assign o_rob_dsp_ret_ld_vld_3 = rob_inst_info_r[rob_ret_sel_3[`ROB_ID_WIDTH - 2 : 0]][`ROB_INST_INFO_LD_VLD];
+assign o_rob_dsp_ret_ld_id_3  = rob_inst_info_r[rob_ret_sel_3[`ROB_ID_WIDTH - 2 : 0]][`ROB_INST_INFO_LD_ID];
 assign o_rob_dsp_ret_st_vld_3 = rob_inst_info_r[rob_ret_sel_3[`ROB_ID_WIDTH - 2 : 0]][`ROB_INST_INFO_ST_VLD];
+assign o_rob_dsp_ret_st_id_3  = rob_inst_info_r[rob_ret_sel_3[`ROB_ID_WIDTH - 2 : 0]][`ROB_INST_INFO_ST_ID];
 
 //
-wire low_power_state_set = (rob_inst_info_r[rob_ret_sel_0[`ROB_ID_WIDTH - 2 : 0]][`ROB_INST_INFO_DECINFO_EXEC_UNIT] == `UOPINFO_ALU) 
+wire o_low_power_state = ((rob_inst_info_r[rob_ret_sel_0[`ROB_ID_WIDTH - 2 : 0]][`ROB_INST_INFO_DECINFO_EXEC_UNIT] == `UOPINFO_ALU) 
                          & (rob_inst_info_r[rob_ret_sel_0[`ROB_ID_WIDTH - 2 : 0]][`ROB_INST_INFO_DECINFO_ALU_WFI])
-                         & o_rob_ren_ret_vld[0];
-gnrl_dffr #(
-    .DATA_WIDTH   (1),
-    .INITIAL_VALUE(0)
-) low_power_state_dffr (low_power_state_set, o_low_power_state, clk, rst_n);
-
+                         & o_rob_ren_ret_vld[0]);
 
 //
 wire rob_fencei_flush = (rob_inst_info_r[rob_ret_sel_0[`ROB_ID_WIDTH - 2 : 0]][`ROB_INST_INFO_DECINFO_EXEC_UNIT] === `UOPINFO_ALU)

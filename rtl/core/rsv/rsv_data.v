@@ -18,7 +18,6 @@ module rsv_data_module (
     input   [`DECINFO_WIDTH - 1         : 0]        i_dsp_rsv_decinfo_bus_0,
     input   [`PREDINFO_WIDTH - 1        : 0]        i_dsp_rsv_predinfo_bus_0,
     input   [`IMM_WIDTH - 1             : 0]        i_dsp_rsv_imm_0,
-    input   [`MEM_SIZE_WIDTH - 1        : 0]        i_dsp_rsv_mem_size_0,
     input   [`ROB_ID_WIDTH  - 1         : 0]        i_dsp_rsv_rob_id_1,
     input                                           i_dsp_rsv_ld_vld_1,
     input   [`LOAD_BUFFER_ID_WIDTH - 1  : 0]        i_dsp_rsv_ld_id_1,
@@ -27,7 +26,6 @@ module rsv_data_module (
     input   [`DECINFO_WIDTH - 1         : 0]        i_dsp_rsv_decinfo_bus_1,
     input   [`PREDINFO_WIDTH - 1        : 0]        i_dsp_rsv_predinfo_bus_1,
     input   [`IMM_WIDTH - 1             : 0]        i_dsp_rsv_imm_1,
-    input   [`MEM_SIZE_WIDTH - 1        : 0]        i_dsp_rsv_mem_size_1,
     input   [`ROB_ID_WIDTH  - 1         : 0]        i_dsp_rsv_rob_id_2,
     input                                           i_dsp_rsv_ld_vld_2,
     input   [`LOAD_BUFFER_ID_WIDTH - 1  : 0]        i_dsp_rsv_ld_id_2,
@@ -36,7 +34,6 @@ module rsv_data_module (
     input   [`DECINFO_WIDTH - 1         : 0]        i_dsp_rsv_decinfo_bus_2,
     input   [`PREDINFO_WIDTH - 1        : 0]        i_dsp_rsv_predinfo_bus_2,
     input   [`IMM_WIDTH - 1             : 0]        i_dsp_rsv_imm_2,
-    input   [`MEM_SIZE_WIDTH - 1        : 0]        i_dsp_rsv_mem_size_2,
     input   [`ROB_ID_WIDTH  - 1         : 0]        i_dsp_rsv_rob_id_3,
     input                                           i_dsp_rsv_ld_vld_3,
     input   [`LOAD_BUFFER_ID_WIDTH - 1  : 0]        i_dsp_rsv_ld_id_3,
@@ -45,7 +42,6 @@ module rsv_data_module (
     input   [`DECINFO_WIDTH - 1         : 0]        i_dsp_rsv_decinfo_bus_3,
     input   [`PREDINFO_WIDTH - 1        : 0]        i_dsp_rsv_predinfo_bus_3,
     input   [`IMM_WIDTH - 1             : 0]        i_dsp_rsv_imm_3,
-    input   [`MEM_SIZE_WIDTH - 1        : 0]        i_dsp_rsv_mem_size_3,
     input                                           i_dsp_rsv_dst_vld_0,
     input                                           i_dsp_rsv_dst_vld_1,
     input                                           i_dsp_rsv_dst_vld_2,
@@ -91,7 +87,6 @@ module rsv_data_module (
     output  [`STORE_BUFFER_ID_WIDTH - 1 : 0]        o_rsv_st_id_3,
     output  [`EXCEPTION_CODE_WIDTH - 1  : 0]        o_rsv_excp_code_3,
     output  [`DECINFO_WIDTH - 1         : 0]        o_rsv_decinfo_bus_3,
-    output  [`MEM_SIZE_WIDTH - 1        : 0]        o_rsv_mem_size_3,
     output  [`IMM_WIDTH - 1             : 0]        o_rsv_imm_3,
     output                                          o_rsv_dst_vld_3,
     output  [`PRF_CODE_WIDTH - 1        : 0]        o_rsv_prf_code_3,
@@ -120,7 +115,6 @@ wire [`RSV_DATA_WIDTH - 1 : 0] rsv_wdat_0 = {
                                             ,   i_dsp_rsv_dst_prf_code_0
                                             ,   i_dsp_rsv_len[0]
                                             ,   i_dsp_rsv_imm_0
-                                            ,   i_dsp_rsv_mem_size_0
                                             ,   i_dsp_rsv_excp_code_0
                                             };
 
@@ -136,7 +130,6 @@ wire [`RSV_DATA_WIDTH - 1 : 0] rsv_wdat_1 = {
                                             ,   i_dsp_rsv_dst_prf_code_1
                                             ,   i_dsp_rsv_len[1]
                                             ,   i_dsp_rsv_imm_1
-                                            ,   i_dsp_rsv_mem_size_1
                                             ,   i_dsp_rsv_excp_code_1
                                             };
 
@@ -152,7 +145,6 @@ wire [`RSV_DATA_WIDTH - 1 : 0] rsv_wdat_2 = {
                                             ,   i_dsp_rsv_dst_prf_code_2
                                             ,   i_dsp_rsv_len[2]
                                             ,   i_dsp_rsv_imm_2
-                                            ,   i_dsp_rsv_mem_size_2
                                             ,   i_dsp_rsv_excp_code_2
                                             };
 
@@ -168,7 +160,6 @@ wire [`RSV_DATA_WIDTH - 1 : 0] rsv_wdat_3 = {
                                             ,   i_dsp_rsv_dst_prf_code_3
                                             ,   i_dsp_rsv_len[3]
                                             ,   i_dsp_rsv_imm_3
-                                            ,   i_dsp_rsv_mem_size_3
                                             ,   i_dsp_rsv_excp_code_3
                                             };
 
@@ -198,7 +189,6 @@ wire [`LOAD_BUFFER_ID_WIDTH - 1 : 0] o_rsv_ld_id_0;
 wire o_rsv_st_vld_0;
 wire [`STORE_BUFFER_ID_WIDTH - 1 : 0] o_rsv_st_id_0;
 wire [`PREDINFO_WIDTH - 1 : 0] o_rsv_predinfo_bus_0;
-wire [`MEM_SIZE_WIDTH - 1 : 0] o_rsv_mem_size_0;
 
 assign {
             o_rsv_rob_id_0
@@ -212,7 +202,6 @@ assign {
         ,   o_rsv_prf_code_0
         ,   o_rsv_len[0]
         ,   o_rsv_imm_0
-        ,   o_rsv_mem_size_0
         ,   o_rsv_excp_code_0
 } = rsv_data_r[func_vec64r(i_oldest_rsv_vec_0)];
 
@@ -221,7 +210,6 @@ wire o_rsv_ld_vld_1;
 wire [`LOAD_BUFFER_ID_WIDTH - 1 : 0] o_rsv_ld_id_1;
 wire o_rsv_st_vld_1;
 wire [`STORE_BUFFER_ID_WIDTH - 1 : 0] o_rsv_st_id_1;
-wire [`MEM_SIZE_WIDTH - 1 : 0] o_rsv_mem_size_1;
 
 assign {
             o_rsv_rob_id_1
@@ -235,7 +223,6 @@ assign {
         ,   o_rsv_prf_code_1
         ,   o_rsv_len[1]
         ,   o_rsv_imm_1
-        ,   o_rsv_mem_size_1
         ,   o_rsv_excp_code_1
 } = rsv_data_r[func_vec64r(i_oldest_rsv_vec_1)];
 
@@ -245,7 +232,6 @@ wire [`LOAD_BUFFER_ID_WIDTH - 1 : 0] o_rsv_ld_id_2;
 wire o_rsv_st_vld_2;
 wire [`STORE_BUFFER_ID_WIDTH - 1 : 0] o_rsv_st_id_2;
 wire [`PREDINFO_WIDTH - 1 : 0] o_rsv_predinfo_bus_2;
-wire [`MEM_SIZE_WIDTH - 1 : 0] o_rsv_mem_size_2;
 
 assign {
             o_rsv_rob_id_2
@@ -259,7 +245,6 @@ assign {
         ,   o_rsv_prf_code_2
         ,   o_rsv_len[2]
         ,   o_rsv_imm_2
-        ,   o_rsv_mem_size_2
         ,   o_rsv_excp_code_2
 } = rsv_data_r[func_vec64r(i_oldest_rsv_vec_2)];
 //
@@ -277,7 +262,6 @@ assign {
         ,   o_rsv_prf_code_3
         ,   o_rsv_len[3]
         ,   o_rsv_imm_3
-        ,   o_rsv_mem_size_3
         ,   o_rsv_excp_code_3
 } = rsv_data_r[func_vec64r(i_oldest_rsv_vec_3)];
 

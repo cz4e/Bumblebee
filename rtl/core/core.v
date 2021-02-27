@@ -1107,7 +1107,6 @@ rsv_module rsv (
     .o_rsv_exu_dst_prf_code_3 (o_rsv_exu_dst_prf_code_3),
     .o_rsv_exu_excp_code_3    (o_rsv_exu_excp_code_3),
     .o_rsv_exu_decinfo_bus_3  (o_rsv_exu_decinfo_bus_3),
-    .o_rsv_exu_mem_size_3     (o_rsv_exu_mem_size_3),
     .o_rsv_exu_imm_3          (o_rsv_exu_imm_3),
     .o_rsv_exu_len_3          (o_rsv_exu_len_3),
     .o_rsv_exu_rob_id_3       (o_rsv_exu_rob_id_3),
@@ -1234,7 +1233,6 @@ exu_top_module exu (
     .i_rsv_exu_rob_id_2     (o_rsv_exu_rob_id_2),
     .i_rsv_exu_decinfo_bus_2(o_rsv_exu_decinfo_bus_2),
     .i_rsv_exu_len_2        (o_rsv_exu_len_2),
-    .i_rob_exu_addr_2       (o_rob_exu_addr_2),
     .i_rsv_exu_excp_code_2  (o_rsv_exu_excp_code_2),
 
     .i_rsv_exu_vld_3        (o_rsv_exu_issue_vld_3),
@@ -1309,7 +1307,7 @@ exu_top_module exu (
     .i_rob_exu_ret_ld_id_3  (o_rob_dsp_ret_ld_id_3),
     .i_rob_exu_ret_st_vld_3 (o_rob_dsp_ret_st_vld_3),
     .i_rob_exu_ret_st_id_3  (o_rob_dsp_ret_st_id_3),
-    .i_rob_exu_ls_addr      (),
+    .i_rob_exu_ls_addr      (o_rob_exu_ls_addr),
     .i_rob_dtlb_flush       (o_rob_dtlb_flush),
     .i_rob_dtlb_src1        (o_rob_dtlb_src1),
     .i_rob_dtlb_src2        (o_rob_dtlb_src2),
@@ -1466,6 +1464,7 @@ wire [`CORE_PC_WIDTH - 1 : 0] o_rob_exu_addr_0;
 wire [`CORE_PC_WIDTH - 1 : 0] o_rob_exu_addr_1;
 wire [`CORE_PC_WIDTH - 1 : 0] o_rob_exu_addr_3;
 wire [`CORE_PC_WIDTH - 1 : 0] o_rob_csr_trap_addr;
+wire [`CORE_PC_WIDTH - 1 : 0] o_rob_exu_ls_addr;
 wire o_low_power_state;
 wire o_rob_itlb_flush;
 wire [31 : 0] o_rob_itlb_src1;
@@ -1560,11 +1559,10 @@ rob_module rob (
     .i_exu_rob_rob_id_addr_1 (o_rsv_exu_rob_id_1),
     .i_exu_rob_rob_id_addr_3 (o_rsv_exu_rob_id_3),
 
-    .i_itlb_rob_flush_done   (),
-    .i_dtlb_rob_flush_done   (),
-    .i_mmu_rob_flush_done    (),
-    .i_exu_rob_st_ret_done   (),
-    .i_ext_rob_int_vld       (),
+    .i_itlb_rob_flush_done   (o_itlb_rob_flush_done),
+    .i_dtlb_rob_flush_done   (o_dtlb_rob_flush_done),
+    .i_mmu_rob_flush_done    (o_mmu_rob_flush_done),
+    .i_exu_rob_st_ret_done   (o_exu_rob_s_ret_done),
 
     .o_rob_ren_ret_vld       (o_rob_ren_ret_vld),
     .o_rob_ren_ret_dst_vld_0 (o_rob_ren_ret_dst_vld_0),
@@ -1614,24 +1612,24 @@ rob_module rob (
     .o_rob_dsp_ret_vld       (o_rob_dsp_ret_vld),
     .o_rob_dsp_ret_rob_id_0  (o_rob_dsp_ret_rob_id_0),
     .o_rob_dsp_ret_ld_vld_0  (o_rob_dsp_ret_ld_vld_0),
-    .o_rob_dsp_ret_ld_id_0   (),
+    .o_rob_dsp_ret_ld_id_0   (o_rob_dsp_ret_ld_id_0),
     .o_rob_dsp_ret_st_vld_0  (o_rob_dsp_ret_st_vld_0),
-    .o_rob_dsp_ret_st_id_0   (),
+    .o_rob_dsp_ret_st_id_0   (o_rob_dsp_ret_st_id_0),
     .o_rob_dsp_ret_rob_id_1  (o_rob_dsp_ret_rob_id_1),
     .o_rob_dsp_ret_ld_vld_1  (o_rob_dsp_ret_ld_vld_1),
-    .o_rob_dsp_ret_ld_id_1   (),
+    .o_rob_dsp_ret_ld_id_1   (o_rob_dsp_ret_ld_id_1),
     .o_rob_dsp_ret_st_vld_1  (o_rob_dsp_ret_st_vld_1),
-    .o_rob_dsp_ret_st_id_1   (),
+    .o_rob_dsp_ret_st_id_1   (o_rob_dsp_ret_st_id_1),
     .o_rob_dsp_ret_rob_id_2  (o_rob_dsp_ret_rob_id_2),
     .o_rob_dsp_ret_ld_vld_2  (o_rob_dsp_ret_ld_vld_2),
-    .o_rob_dsp_ret_ld_id_2   (),
+    .o_rob_dsp_ret_ld_id_2   (o_rob_dsp_ret_ld_id_2),
     .o_rob_dsp_ret_st_vld_2  (o_rob_dsp_ret_st_vld_2),
-    .o_rob_dsp_ret_st_id_2   (),
+    .o_rob_dsp_ret_st_id_2   (o_rob_dsp_ret_st_id_2),
     .o_rob_dsp_ret_rob_id_3  (o_rob_dsp_ret_rob_id_3),
     .o_rob_dsp_ret_ld_vld_3  (o_rob_dsp_ret_ld_vld_3),
-    .o_rob_dsp_ret_ld_id_3   (),
+    .o_rob_dsp_ret_ld_id_3   (o_rob_dsp_ret_ld_id_3),
     .o_rob_dsp_ret_st_vld_3  (o_rob_dsp_ret_st_vld_3),
-    .o_rob_dsp_ret_st_ld_3   (),
+    .o_rob_dsp_ret_st_ld_3   (o_rob_dsp_ret_st_id_3),
 
     .o_rob_dsp_mis_ld_vld    (o_rob_dsp_mis_ld_vld),
     .o_rob_dsp_mis_ld_id     (o_rob_dsp_mis_ld_id),
@@ -1642,6 +1640,7 @@ rob_module rob (
     .o_rob_exu_addr_1        (o_rob_exu_addr_1),
     .o_rob_exu_addr_3        (o_rob_exu_addr_3),
     .o_rob_csr_trap_addr     (o_rob_csr_trap_addr),
+    .o_rob_exu_ls_addr       (o_rob_exu_ls_addr),
     .o_low_power_state       (o_low_power_state),
     .o_rob_itlb_flush        (o_rob_itlb_flush),
     .o_rob_itlb_src1         (o_rob_itlb_src1),
@@ -1737,9 +1736,9 @@ mmu_module mmu (
     .i_exu_mem_raddr      (o_exu_mem_rd_paddr),
     .i_exu_mem_wren       (o_exu_mem_wr_vld),
     .i_exu_mem_waddr      (o_exu_mem_wr_paddr),
-    .i_exu_mmu_ack        (),
-    .i_icache_mem_rden    (),
-    .i_icache_mem_raddr   (),
+    .i_exu_mmu_ack        (o_exu_mmu_ack),
+    .i_icache_mem_rden    (o_icache_mem_vld),
+    .i_icache_mem_raddr   (o_icache_mem_paddr),
 
     .o_mmu_itlb_vld       (o_mmu_itlb_vld),
     .o_mmu_itlb_tlb       (o_mmu_itlb_tlb),

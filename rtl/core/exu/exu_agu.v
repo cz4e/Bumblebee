@@ -85,13 +85,6 @@ module exu_agu_module (
     input   [`SBUFF_ID_WIDTH - 1        : 0]        i_rsv_exu_st_id,
     input   [`DECINFO_WIDTH - 1         : 0]        i_rsv_exu_decinfo_bus,
     input   [`IMM_WIDTH - 1             : 0]        i_rsv_exu_imm,
-    /*
-    input                                           i_rsv_rob_vld,
-    input   [`ROB_ID_WIDTH - 1          : 0]        i_rsv_rob_rob_id,
-    input   [`LBUFF_ID_WIDTH - 1        : 0]        i_rsv_rob_ld_id,
-    input   [`SBUFF_ID_WIDTH - 1        : 0]        i_rsv_rob_st_id,
-    input                                           i_rsv_rob_done, 
-    */
     input                                           i_mmu_busy,
     input                                           i_mmu_dtlb_vld,
     input   [52                         : 0]        i_mmu_dtlb_tlb,

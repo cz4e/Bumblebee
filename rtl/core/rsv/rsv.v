@@ -150,7 +150,6 @@ module rsv_module (
 	output	[`PRF_CODE_WIDTH - 1		: 0]		o_rsv_exu_dst_prf_code_3,
 	output	[`EXCEPTION_CODE_WIDTH - 1	: 0]		o_rsv_exu_excp_code_3,
 	output	[`DECINFO_WIDTH - 1			: 0]		o_rsv_exu_decinfo_bus_3,
-	output	[`MEM_SIZE_WIDTH - 1		: 0]		o_rsv_exu_mem_size_3,
 	output	[`IMM_WIDTH - 1				: 0]		o_rsv_exu_imm_3,
 	output											o_rsv_exu_len_3,
 	output	[`ROB_ID_WIDTH - 1			: 0]		o_rsv_exu_rob_id_3,
