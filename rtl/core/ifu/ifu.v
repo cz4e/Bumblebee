@@ -43,7 +43,7 @@ wire ifu_need_flush;
 wire ifu_can_gen;
 wire ifu_need_gen;
 
-assign ifu_need_gen = ifu_can_gen | ifu_need_flush;
+assign ifu_need_gen = (ifu_can_gen | ifu_need_flush);
 
 //  Generate PC Address.
 
@@ -53,18 +53,18 @@ wire ifu_sel_mis  = func_rob_old(i_exu_mis_rob_id, i_exu_ls_rob_id);
 wire [`CORE_PC_WIDTH - 1 : 0] ifu_sel_mis_ls_addr = ifu_sel_mis ? i_exu_mis_addr
                                                                 : i_exu_ls_addr;
 
-wire ifu_exu_flush_occur_both = i_exu_ls_flush & i_exu_mis_flush;
-wire ifu_exu_flush_occur      = i_exu_ls_flush | i_exu_mis_flush;
+wire ifu_exu_flush_occur_both = (i_exu_ls_flush & i_exu_mis_flush);
+wire ifu_exu_flush_occur      = (i_exu_ls_flush | i_exu_mis_flush);
 
 wire [`CORE_PC_WIDTH - 1 : 0] i_ifu_sel_exu_flush_addr = ifu_exu_flush_occur_both ? ifu_sel_mis_ls_addr
                                                        : i_exu_ls_flush           ? i_exu_ls_addr
                                                        : i_exu_mis_addr;
 
-assign ifu_need_flush   = i_csr_trap_flush
-                        | ifu_exu_flush_occur
-                        | i_iq_flush
-                        | i_iq_uc_flush
-                        | i_bpu_flush; 
+assign ifu_need_flush   = (i_csr_trap_flush
+                        |  ifu_exu_flush_occur
+                        |  i_iq_flush
+                        |  i_iq_uc_flush
+                        |  i_bpu_flush); 
 //
 wire [4 : 0] i_ifu_flush_sel = {i_bpu_flush, i_iq_flush, i_iq_uc_flush, ifu_exu_flush_occur, i_csr_trap_flush};
 wire [4 : 0] ifu_flush_vec = func_sel_vec(i_ifu_flush_sel);
@@ -105,11 +105,10 @@ wire ifu_addrq_ctr_add_ena     = ifu_can_gen;
 wire ifu_addrq_ctr_sub_ena     = i_icache_ifu_vld;
 
 wire [2 : 0] ifu_addrq_ctr_res = ({2'b0, ifu_addrq_ctr_add_ena} - {2'b0, ifu_addrq_ctr_sub_ena});
-wire [2 : 0] ifu_addrq_ctr_com = ifu_addrq_ctr_r + ifu_addrq_ctr_res;
+wire [2 : 0] ifu_addrq_ctr_com = (ifu_addrq_ctr_r + ifu_addrq_ctr_res);
 
 
-wire i_ifu_addrq_ctr_ena = ifu_need_flush
-                         | (ifu_addrq_ctr_add_ena | ifu_addrq_ctr_sub_ena);
+wire i_ifu_addrq_ctr_ena = (ifu_need_flush | ifu_addrq_ctr_add_ena | ifu_addrq_ctr_sub_ena);
 wire [2 : 0] i_ifu_addrq_ctr_nxt = ifu_need_flush ? 3'd0
                                  : ifu_addrq_ctr_com;
 
