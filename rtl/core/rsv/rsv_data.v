@@ -334,6 +334,8 @@ function [5 : 0] func_vec64r;
         64'd2305843009213693952 : func_vec64r = 6'b111101;
         64'd4611686018427387904 : func_vec64r = 6'b111110;
         64'd9223372036854775808 : func_vec64r = 6'b111111;
+        default: 
+            func_vec64r = 6'd0;
     endcase
 
 endfunction

@@ -1,7 +1,7 @@
 `ifdef __EXU_DTLB_V__
 
 module dtlb_module (
-    input                                       i_dtlb_req,
+    input                                       i_dtlb_rden,
     input   [`DTLB_TAG_WIDTH - 1    : 0]        i_dtlb_rtag,
     input   [`DTLB_IDX_WIDTH - 1    : 0]        i_dtlb_ridx,
     input                                       i_dtlb_wren,
@@ -474,22 +474,22 @@ endgenerate
 //
 
 wire [15 : 0] dtlb_hit = {
-                            (i_dtlb_req & dtlb_vld_way_15[i_dtlb_ridx] & (dtlb_tag_way_15[i_dtlb_ridx] == i_dtlb_rtag))
-                        ,   (i_dtlb_req & dtlb_vld_way_14[i_dtlb_ridx] & (dtlb_tag_way_14[i_dtlb_ridx] == i_dtlb_rtag))
-                        ,   (i_dtlb_req & dtlb_vld_way_13[i_dtlb_ridx] & (dtlb_tag_way_13[i_dtlb_ridx] == i_dtlb_rtag))
-                        ,   (i_dtlb_req & dtlb_vld_way_12[i_dtlb_ridx] & (dtlb_tag_way_12[i_dtlb_ridx] == i_dtlb_rtag))
-                        ,   (i_dtlb_req & dtlb_vld_way_11[i_dtlb_ridx] & (dtlb_tag_way_11[i_dtlb_ridx] == i_dtlb_rtag))
-                        ,   (i_dtlb_req & dtlb_vld_way_10[i_dtlb_ridx] & (dtlb_tag_way_10[i_dtlb_ridx] == i_dtlb_rtag))
-                        ,   (i_dtlb_req & dtlb_vld_way_9[i_dtlb_ridx]  & (dtlb_tag_way_9[i_dtlb_ridx]  == i_dtlb_rtag))
-                        ,   (i_dtlb_req & dtlb_vld_way_8[i_dtlb_ridx]  & (dtlb_tag_way_8[i_dtlb_ridx]  == i_dtlb_rtag))
-                        ,   (i_dtlb_req & dtlb_vld_way_7[i_dtlb_ridx]  & (dtlb_tag_way_7[i_dtlb_ridx]  == i_dtlb_rtag))
-                        ,   (i_dtlb_req & dtlb_vld_way_6[i_dtlb_ridx]  & (dtlb_tag_way_6[i_dtlb_ridx]  == i_dtlb_rtag))
-                        ,   (i_dtlb_req & dtlb_vld_way_5[i_dtlb_ridx]  & (dtlb_tag_way_5[i_dtlb_ridx]  == i_dtlb_rtag))
-                        ,   (i_dtlb_req & dtlb_vld_way_4[i_dtlb_ridx]  & (dtlb_tag_way_4[i_dtlb_ridx]  == i_dtlb_rtag))
-                        ,   (i_dtlb_req & dtlb_vld_way_3[i_dtlb_ridx]  & (dtlb_tag_way_3[i_dtlb_ridx]  == i_dtlb_rtag))
-                        ,   (i_dtlb_req & dtlb_vld_way_2[i_dtlb_ridx]  & (dtlb_tag_way_2[i_dtlb_ridx]  == i_dtlb_rtag))
-                        ,   (i_dtlb_req & dtlb_vld_way_1[i_dtlb_ridx]  & (dtlb_tag_way_1[i_dtlb_ridx]  == i_dtlb_rtag))
-                        ,   (i_dtlb_req & dtlb_vld_way_0[i_dtlb_ridx]  & (dtlb_tag_way_0[i_dtlb_ridx]  == i_dtlb_rtag))
+                            (i_dtlb_rden & dtlb_vld_way_15[i_dtlb_ridx] & (dtlb_tag_way_15[i_dtlb_ridx] == i_dtlb_rtag))
+                        ,   (i_dtlb_rden & dtlb_vld_way_14[i_dtlb_ridx] & (dtlb_tag_way_14[i_dtlb_ridx] == i_dtlb_rtag))
+                        ,   (i_dtlb_rden & dtlb_vld_way_13[i_dtlb_ridx] & (dtlb_tag_way_13[i_dtlb_ridx] == i_dtlb_rtag))
+                        ,   (i_dtlb_rden & dtlb_vld_way_12[i_dtlb_ridx] & (dtlb_tag_way_12[i_dtlb_ridx] == i_dtlb_rtag))
+                        ,   (i_dtlb_rden & dtlb_vld_way_11[i_dtlb_ridx] & (dtlb_tag_way_11[i_dtlb_ridx] == i_dtlb_rtag))
+                        ,   (i_dtlb_rden & dtlb_vld_way_10[i_dtlb_ridx] & (dtlb_tag_way_10[i_dtlb_ridx] == i_dtlb_rtag))
+                        ,   (i_dtlb_rden & dtlb_vld_way_9[i_dtlb_ridx]  & (dtlb_tag_way_9[i_dtlb_ridx]  == i_dtlb_rtag))
+                        ,   (i_dtlb_rden & dtlb_vld_way_8[i_dtlb_ridx]  & (dtlb_tag_way_8[i_dtlb_ridx]  == i_dtlb_rtag))
+                        ,   (i_dtlb_rden & dtlb_vld_way_7[i_dtlb_ridx]  & (dtlb_tag_way_7[i_dtlb_ridx]  == i_dtlb_rtag))
+                        ,   (i_dtlb_rden & dtlb_vld_way_6[i_dtlb_ridx]  & (dtlb_tag_way_6[i_dtlb_ridx]  == i_dtlb_rtag))
+                        ,   (i_dtlb_rden & dtlb_vld_way_5[i_dtlb_ridx]  & (dtlb_tag_way_5[i_dtlb_ridx]  == i_dtlb_rtag))
+                        ,   (i_dtlb_rden & dtlb_vld_way_4[i_dtlb_ridx]  & (dtlb_tag_way_4[i_dtlb_ridx]  == i_dtlb_rtag))
+                        ,   (i_dtlb_rden & dtlb_vld_way_3[i_dtlb_ridx]  & (dtlb_tag_way_3[i_dtlb_ridx]  == i_dtlb_rtag))
+                        ,   (i_dtlb_rden & dtlb_vld_way_2[i_dtlb_ridx]  & (dtlb_tag_way_2[i_dtlb_ridx]  == i_dtlb_rtag))
+                        ,   (i_dtlb_rden & dtlb_vld_way_1[i_dtlb_ridx]  & (dtlb_tag_way_1[i_dtlb_ridx]  == i_dtlb_rtag))
+                        ,   (i_dtlb_rden & dtlb_vld_way_0[i_dtlb_ridx]  & (dtlb_tag_way_0[i_dtlb_ridx]  == i_dtlb_rtag))
                         
                     };
 
