@@ -22,6 +22,10 @@ module mmu_module (
 	input										    i_exu_mmu_ack,
 	input										    i_icache_mem_rden,  //  ICACHE
 	input	[`PHY_ADDR_WIDTH - 1	: 0]			i_icache_mem_raddr,
+	input 											i_ext_mmu_rd_ack,
+	input 	[`MEM_SIZE_WIDTH - 1	: 0]			i_ext_mmu_rdat,
+	input 											i_ext_mmu_wr_ack,
+	input 											i_ext_mmu_rdy,
 
 	output										    o_mmu_itlb_vld,
 	output	[52					    : 0]			o_mmu_itlb_tlb,
@@ -53,6 +57,7 @@ module mmu_module (
 	input											rst_n
 );
 
+//
 wire mmu_need_flush = (i_csr_trap_flush | i_exu_mis_flush | i_exu_ls_flush);
 
 //  Control
@@ -82,41 +87,58 @@ assign mmu_sta_nxt = ({MMU_STATE_WIDTH{mmu_sta_enter_idle  }} & MMU_STATE_IDLE	)
 wire mmu_sta_ena = (mmu_sta_exit_idle
 				 |  mmu_sta_exit_srch_1
 				 |  mmu_sta_exit_srch_2);
-
 gnrl_dfflr #( 
 	.DATA_WIDTH   (MMU_STATE_WIDTH),
 	.INITIAL_VALUE(MMU_STATE_IDLE)
 ) mmu_sta_dfflr (mmu_sta_ena, mmu_sta_nxt, mmu_sta_cur_r, clk, rst_n);
 
 //
-wire [2 : 0] rr_arb_req_vec = {1'b0, i_dtlb_mmu_vld, i_itlb_mmu_vld};
-wire [2 : 0] rr_arb_end_access_vec = ({1'b0, (~(mmu_trans_done & rr_arb_gnt_vec[1])), (~(mmu_trans_done & rr_arb_gnt_vec[0]))});
-wire [2 : 0] rr_arb_gnt_vec;
+wire [1 : 0] mmu_rr_arb_r, mmu_rr_arb_nxt;
 
-gnrl_arb mmu_rr_arb ( 
-    .i_req_vec       (rr_arb_req_vec),
-    .i_end_access_vec(rr_arb_end_access_vec),
-    .o_gnt_vec       (rr_arb_gnt_vec),
-    .clk             (clk),
-    .rst_n           (rst_n)
-);
+assign mmu_rr_arb_nxt = ((i_itlb_mmu_vld & mmu_rr_arb_r[0]) | (i_dtlb_mmu_vld & mmu_rr_arb_r[1])) ? {mmu_rr_arb_r[0], mmu_rr_arb_r[1]} : mmu_rr_arb_r;
 
-wire [`CORE_PC_WIDTH - 1 : 0] mmu_vaddr = ({`CORE_PC_WIDTH{rr_arb_gnt_vec[0]}} & i_itlb_mmu_vaddr)
-                                        | ({`CORE_PC_WIDTH{rr_arb_gnt_vec[1]}} & i_dtlb_mmu_vaddr)
+wire mmu_rr_arb_ena = mmu_trans_done;
 
-wire [`PHY_ADDR_WIDTH - 1 : 0] pte_addr_0 = ({i_csr_mmu_satp[21 : 0], 12'h0} + {22'h0, mmu_vaddr[31 : 22], 2'h0});
-wire [`PHY_ADDR_WIDTH - 1 : 0] pte_addr_1 = ({pte[31 : 10], 12'h0} + {22'h0, mmu_vaddr[31 : 22], 2'h0});
+gnrl_dfflr #( 
+	.DATA_WIDTH   (2),
+	.INITIAL_VALUE(1)
+) mmu_rr_arb_dfflr (mmu_rr_arb_ena, mmu_rr_arb_nxt, mmu_rr_arb_r, clk, rst_n);
+
+wire [`CORE_PC_WIDTH - 1 : 0] mmu_vaddr_nxt = (i_dtlb_mmu_vld & i_itlb_mmu_vld) ? (({`CORE_PC_WIDTH{mmu_rr_arb_r[0]}} & i_itlb_mmu_vaddr) | ({`CORE_PC_WIDTH{mmu_rr_arb_r[1]}} & i_dtlb_mmu_vaddr))
+										    : i_itlb_mmu_vld ? i_itlb_mmu_vaddr
+											: i_dtlb_mmu_vaddr;
+
+wire mmu_vaddr_ena = (mmu_sta_is_idle & (i_dtlb_mmu_vld | i_itlb_mmu_vld));
+wire [`CORE_PC_WIDTH - 1 : 0] mmu_vaddr_r;
+
+gnrl_dffl #( 
+	.DATA_WIDTH(`CORE_PC_WIDTH)
+) mmu_vaddr_dffl (mmu_vaddr_ena, mmu_vaddr_nxt, mmu_vaddr_r, clk);
+
+wire [`PHY_ADDR_WIDTH - 1 : 0] pte_addr_0 = ({i_csr_mmu_satp[21 : 0], 12'h0} + {22'h0, mmu_vaddr_r[31 : 22], 2'h0});
+wire [`PHY_ADDR_WIDTH - 1 : 0] pte_addr_1 = ({pte[31 : 10], 12'h0} + {22'h0, mmu_vaddr_r[31 : 22], 2'h0});
 
 assign o_mem_ext_paddr = ({`PHY_ADDR_WIDTH{mmu_sta_is_srch_1}} & pte_addr_0)
 					   | ({`PHY_ADDR_WIDTH{mmu_sta_is_srch_2}} & pte_addr_1);
 
 
-//  L2TLB
+wire [1 : 0] mmu_rr_port_r;
+wire [1 : 0] mmu_rr_port_nxt = (i_dtlb_mmu_vld & i_itlb_mmu_vld) ? mmu_rr_arb_r
+							 : i_itlb_mmu_vld ? 2'd1 
+							 : 2'd2;
+wire mmu_rr_port_ena = mmu_rr_arb_ena;
+
+gnrl_dfflr #( 
+	.DATA_WIDTH   (2),
+	.INITIAL_VALUE(0)
+) mmu_rr_port_dfflr (mmu_rr_port_ena, mmu_rr_port_nxt, mmu_rr_port_r, clk, rst_n);
+
+//	L2TLB
 wire i_l2tlb_rden = (i_dtlb_mmu_vld | i_itlb_mmu_vld);
-wire [`CORE_PC_WIDTH - 1 : 0] i_l2tlb_vaddr = mmu_vaddr;
-wire i_l2tlb_wren = ;
-wire [`PTE_WIDTH - 1 : 0] i_l2tlb_pte = ;
-wire [`PHY_ADDR_WIDTH - 1 : 0] i_l2tlb_paddr = ;
+wire [`CORE_PC_WIDTH - 1 : 0] i_l2tlb_vaddr = mmu_vaddr_r;
+wire i_l2tlb_wren;
+wire [`PTE_WIDTH - 1 : 0] i_l2tlb_pte;
+wire [`PHY_ADDR_WIDTH - 1 : 0] i_l2tlb_paddr;
 
 wire o_l2tlb_hit;
 wire [`L2TLB_TLB_WIDTH - 1 : 0] o_l2tlb_tlb;
@@ -140,17 +162,15 @@ l2tlb_module l2tlb (
 	.rst_n		  (rst_n)
 );
 
-//
+//	PTE_CACHE
 wire i_pte_cache_rden = (i_dtlb_mmu_vld | i_itlb_mmu_vld);
-wire [`CORE_PC_WIDTH - 1 : 0] i_pte_cache_vaddr = mmu_vaddr;
+wire [`CORE_PC_WIDTH - 1 : 0] i_pte_cache_vaddr = mmu_vaddr_r;
 wire i_pte_cache_wren;
-wire [1 : 0] i_pte_cache_level = ({2{mmu_sta_is_srch_1}} & 2'b00)
-                               | ({2{mmu_sta_is_srch_2}} & 2'b11);
+wire [1 : 0] i_pte_cache_level;
 wire [`PTE_WIDTH - 1 : 0] i_pte_cache_pte;
 
 wire o_pte_cache_hit;
 wire [`PTE_CACHE_DATA_WIDTH - 1 : 0] o_pte_cache_rdat;
-
 pte_cache_module pte_cache ( 
 	.i_csr_rv_mode		  (i_csr_rv_mode),
 	.i_pte_cache_satp	  (i_csr_mmu_satp),
@@ -171,18 +191,19 @@ pte_cache_module pte_cache (
 	.rst_n				  (rst_n)
 );
 
-//  Exception
-wire [`PTE_WIDTH - 1 : 0] pte = i_ext_mmu_rdat[`PTE_WIDTH - 1 : 0];
+//
+wire [`PTE_WIDTH - 1 : 0] pte = i_ext_mem_rdat[`PTE_WIDTH - 1 : 0];
 wire pte_level_1 = ((pte[`PTE_V] == 1'b1) & ((pte[`PTE_R] == 1'b1) | (pte[`PTE_W] == 1'b1)));
 
 wire [2 : 0] mmu_tlb_excp_vec;
 
 wire mmu_tlb_excp_0_ena = (mmu_sta_nxt == MMU_STATE_SRCH_2);
-wire mmu_tlb_excp_0_r;
-wire mmu_tlb_excp_0_nxt = ((pte[`PTE_V] == 1'b0) | ((pte[`PTE_R] == 1'b0) & (pte[`PTE_W] == 1'b1)));
+wire mmu_tlb_excp_0_r, mmu_tlb_excp_0_nxt;
+
+assign mmu_tlb_excp_0_nxt = ((pte[`PTE_V] == 1'b0) | ((pte[`PTE_R] == 1'b0) & (pte[`PTE_W] == 1'b1)));
 
 gnrl_dffl #( 
-    .DATA_WIDTH(1)
+	.DATA_WIDTH(1)
 ) mmu_tlb_excp_0_dffl (mmu_tlb_excp_0_ena, mmu_tlb_excp_0_nxt, mmu_tlb_excp_0_r, clk);
 
 wire [1 : 0] mmu_tlb_excp_1_vec = {
@@ -195,63 +216,43 @@ assign mmu_tlb_excp_vec = {
 						,	(pte_level_1 ? mmu_tlb_excp_0_nxt : mmu_tlb_excp_0_r)
 						};
 
-//
-wire [`PHY_ADDR_WIDTH - 1 : 0] mmu_paddr = (pte_level_1 ? {pte[31 : 20], mmu_vaddr[21 : 0]} : {pte[31 : 10], mmu_vaddr_r[11 : 0]});
+wire [`PHY_ADDR_WIDTH - 1 : 0] mmu_paddr = {pte[31 : 10], mmu_vaddr_r[11 : 0]};
 
-assign {
-        o_mmu_itlb_paddr 
-    ,   o_mmu_dtlb_paddr
-} = {
-        mmu_paddr
-    ,   mmu_paddr
-};
+assign o_mmu_itlb_paddr = mmu_paddr;
+assign o_mmu_dtlb_paddr = mmu_paddr;
 
-wire mmu_trans_done = ((~mmu_need_flush) & (mmu_sta_nxt == MMU_STATE_IDLE));
-assign o_mmu_itlb_vld = (mmu_trans_done & rr_arb_gnt_vec[0]);
-assign o_mmu_dtlb_vld = (mmu_trans_done & rr_arb_gnt_vec[1]);
+wire mmu_trans_done = ((mmu_sta_is_srch_1 | mmu_sta_is_srch_2) & mmu_sta_enter_idle & (~mmu_need_flush));
+
+assign o_mmu_itlb_vld = (mmu_trans_done & mmu_rr_port_r[0]);
+assign o_mmu_dtlb_vld = (mmu_trans_done & mmu_rr_port_r[1]);
 
 wire [`L2TLB_TLB_WIDTH - 1 : 0] mmu_tlb = {
-                                                pte[7 : 0]
-                                            ,   i_csr_mmu_satp[30 : 22]
-                                            ,   i_csr_rv_mode[1 : 0]
-                                            ,   mmu_vaddr[31 : 0]
-                                            ,   mmu_paddr[33 : 12]
-                                        };
-assign o_mmu_itlb_tlb = (o_l2tlb_hit ? o_l2tlb_tlb : mmu_tlb);
+											pte[7 : 0]
+										,	i_csr_mmu_satp[30 : 22]
+										,	i_csr_rv_mode[1 : 0]
+										,	mmu_vaddr_r[31 : 15]
+										,	mmu_paddr[33 : 12]
+										};
+assign o_mmu_itlb_tlb = o_l2tlb_hit ? o_l2tlb_tlb : mmu_tlb;
 assign o_mmu_dtlb_tlb = o_mmu_itlb_tlb;
 
 assign o_mmu_itlb_excp_code = mmu_tlb_excp_vec;
 assign o_mmu_dtlb_excp_code = mmu_tlb_excp_vec;
-
+//
 assign o_mmu_busy = (~mmu_sta_is_idle);
+//
+wire [1 : 0] mmu_load_arb_r, mmu_load_arb_nxt;
 
-//  Load arb
-wire [2 : 0] load_arb_req_vec = {1'b0, (i_exu_mem_rden & mmu_sta_is_idle), (i_icache_mem_rden & mmu_sta_is_idle)};
-wire [2 : 0] load_arb_end_access_vec = {1'b0, (~(i_ext_mmu_rd_ack & load_arb_end_access_vec[1])), (~(i_ext_mmu_rd_ack & load_arb_end_access_vec[0]))};
-wire [2 : 0] load_arb_gnt_vec;
-gnrl_arb load_arb ( 
-    .i_req_vec       (load_arb_req_vec),
-    .i_end_access_vec(load_arb_end_access_vec),
-    .o_gnt_vec       (load_arb_gnt_vec),
-    .clk             (clk),
-    .rst_n           (rst_n)
-);
+assign mmu_load_arb_nxt = ((i_icache_mem_rden & mmu_load_arb_r[0]) | (i_exu_mem_rden & mmu_load_arb_r[0])) ? {mmu_load_arb_r[0], mmu_load_arb_r[1]} : mmu_load_arb_r; 
+
+wire mmu_load_arb_ena = (mmu_sta_is_srch_2 & );
+
+gnrl_dfflr #( 
+	.DATA_WIDTH   (2),
+	.INITIAL_VALUE(1)
+) mmu_load_arb_dfflr (mmu_load_arb_ena, mmu_load_arb_nxt, mmu_load_arb_r, clk, rst_n);
 
 
-//  Mem arb
-wire mmu_need_load = ((|load_arb_gnt_vec));
-wire ext_vld = (i_ext_mmu_rd_ack | i_ext_mmu_wr_ack);
-wire [2 : 0] mem_arb_req_vec = {1'b0, i_exu_mem_wren, mmu_need_load};
-wire [2 : 0] mem_arb_end_access_vec = {1'b0, (~(ext_vld & mem_arb_req_vec[1])), (~(ext_vld & mem_arb_req_vec[0]))};
-wire [2 : 0] mem_arb_gnt_vec;
-
-gnrl_arb mem_arb ( 
-	.i_req_vec		 (mem_arb_req_vec),
-	.i_end_access_vec(mem_arb_end_access_vec),
-	.o_gnt_vec		 (mem_arb_gnt_vec),
-	.clk			 (clk),
-	.rst_n			 (rst_n)
-);
 
 endmodule   //  mmu_module
 
