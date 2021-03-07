@@ -239,9 +239,11 @@ gnrl_arb load_arb (
 
 
 //  Mem arb
-wire mmu_need_load = ((|load_arb_gnt_vec));
+wire mmu_rw_pte = ();
+wire mmu_need_load = ((|load_arb_gnt_vec) | );
 wire ext_vld = (i_ext_mmu_rd_ack | i_ext_mmu_wr_ack);
-wire [2 : 0] mem_arb_req_vec = {1'b0, i_exu_mem_wren, mmu_need_load};
+
+wire [2 : 0] mem_arb_req_vec = {1'b0, (i_exu_mem_wren & (~mmu_rw_pte)), (mmu_need_load & (~mmu_rw_pte))};
 wire [2 : 0] mem_arb_end_access_vec = {1'b0, (~(ext_vld & mem_arb_req_vec[1])), (~(ext_vld & mem_arb_req_vec[0]))};
 wire [2 : 0] mem_arb_gnt_vec;
 
@@ -252,6 +254,35 @@ gnrl_arb mem_arb (
 	.clk			 (clk),
 	.rst_n			 (rst_n)
 );
+
+//	MEM 
+localparam	MMU_CTR_WIDTH = 3;
+localparam  MMU_CTR_1 = 3'd1,
+			MMU_CTR_4 = 3'd4;
+wire [2 : 0] mem_ctr_r, mem_ctr_nxt;
+wire mem_ctr_set = (mmu_rw_pte | (|mem_arb_gnt_vec));
+wire mem_ctr_inc = ( & (~mem_last_cycle));
+wire mem_ctr_ena = (mem_ctr_set | mem_ctr_inc);
+
+assign mem_ctr_nxt = (mem_ctr_set ? MMU_CTR_1 : (mem_ctr_r + 3'd1));
+
+gnrl_dfflr #( 
+	.DATA_WIDTH   (MMU_CTR_WIDTH),
+	.INITIAL_VALUE(0)
+) mem_ctr_dfflr (mem_ctr_ena, mem_ctr_nxt, mem_ctr_r, clk, rst_n);
+
+wire mem_ctr_1th = (mem_ctr_r == MMU_CTR_1);
+wire mem_ctr_4th = (mem_ctr_r == MMU_CTR_4);
+wire mem_last_cycle = mmu_ctr_4th;
+
+assign o_mem_ext_wren = ;
+assign o_mem_ext_rden = ;
+assign o_mem_ext_mask = ;
+assign o_mem_ext_burst = mem_ctr_r;
+assign o_mem_ext_burst_start = (mem_ctr_1th);
+assign o_mem_ext_burst_end = (mem_ctr_4th);
+assign o_mem_ext_burst_vld = (mem_ctr_ena);
+assign o_mem_ext_paddr = ;
 
 endmodule   //  mmu_module
 
