@@ -19,6 +19,8 @@ module mmu_module (
 	input	[`PHY_ADDR_WIDTH - 1	: 0]			i_exu_mem_raddr,
 	input										    i_exu_mem_wren,
 	input	[`PHY_ADDR_WIDTH - 1	: 0]			i_exu_mem_waddr,
+	input 	[`DCACHE_MASK_WIDTH - 1	: 0]			i_exu_mem_wmask,
+	input 	[`DCACHE_DATA_WIDTH - 1	: 0]			i_exu_mem_wdat,
 	input										    i_exu_mmu_ack,
 	input										    i_icache_mem_rden,  //  ICACHE
 	input	[`PHY_ADDR_WIDTH - 1	: 0]			i_icache_mem_raddr,
