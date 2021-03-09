@@ -57,9 +57,7 @@ module mmu_module (
 	input											rst_n
 );
 
-//
 wire mmu_need_flush = (i_csr_trap_flush | i_exu_mis_flush | i_exu_ls_flush);
-//
 
 //  Control
 localparam  MMU_STATE_WIDTH = 3;
@@ -96,7 +94,7 @@ gnrl_dfflr #(
 
 //
 wire [2 : 0] rr_arb_req_vec = {1'b0, i_dtlb_mmu_vld, i_itlb_mmu_vld};
-wire [2 : 0] rr_arb_end_access_vec = {1'b0, (~(mmu_trans_done & rr_arb_gnt_vec[1])), (~(mmu_trans_done & rr_arb_gnt_vec[0]))};
+wire [2 : 0] rr_arb_end_access_vec = ({1'b0, (~(mmu_trans_done & rr_arb_gnt_vec[1]), (~(mmu_trans_done & rr_arb_gnt_vec[0])))});
 wire [2 : 0] rr_arb_gnt_vec;
 
 gnrl_arb mmu_rr_arb ( 
@@ -104,26 +102,24 @@ gnrl_arb mmu_rr_arb (
     .i_end_access_vec(rr_arb_end_access_vec),
     .o_gnt_vec       (rr_arb_gnt_vec),
     .clk             (clk),
-    .rst_n           (rst_n) 
+    .rst_n           (rst_n)    
 );
 
 wire [`CORE_PC_WIDTH - 1 : 0] mmu_vaddr = ({`CORE_PC_WIDTH{rr_arb_gnt_vec[0]}} & i_itlb_mmu_vaddr)
-                                        | ({`CORE_PC_WIDTH{rr_arb_gnt_vec[1]}} & i_dtlb_mmu_vaddr);
+                                        | ({`CORE_PC_WIDTH{rr_arb_gnt_vec[1]}} & i_dtlb_mmu_vaddr)
 
-wire [`PHY_ADDR_WIDTH - 1 : 0] pte_addr_0 = {i_csr_mmu_satp[21 : 0], mmu_vaddr[31 : 22], 2'h0};
-wire [`PHY_ADDR_WIDTH - 1 : 0] pte_addr_1 = {pte[31 : 10], mmu_vaddr[31 : 22], 2'h0};
+wire [`PHY_ADDR_WIDTH - 1 : 0] pte_addr_0 = ({i_csr_mmu_satp[21 : 0], 12'h0} + {22'h0, mmu_vaddr[31 : 22], 2'h0});
+wire [`PHY_ADDR_WIDTH - 1 : 0] pte_addr_1 = ({pte[31 : 10], 12'h0} + {22'h0, mmu_vaddr[31 : 22], 2'h0});
 
 wire [`PHY_ADDR_WIDTH - 1 : 0] pte_paddr = ({`PHY_ADDR_WIDTH{mmu_sta_is_srch_1}} & pte_addr_0)
-                                         | ({`PHY_ADDR_WIDTH{mmu_sta_is_srch_2}} & pte_addr_1);
-
-wire [`PHY_ADDR_WIDTH - 1 : 0] mmu_pte_paddr = (pte_level_1 ? {pte[31 : 20], mmu_vaddr[21 : 0]} : {pte[31 : 10], mmu_vaddr[11 : 0]});
+					   			     	 | ({`PHY_ADDR_WIDTH{mmu_sta_is_srch_2}} & pte_addr_1);
 
 //  L2TLB
-wire i_l2tlb_rden = (|rr_arb_gnt_vec[1 : 0]);
+wire i_l2tlb_rden = (|rr_arb_gnt_vec);
 wire [`CORE_PC_WIDTH - 1 : 0] i_l2tlb_vaddr = mmu_vaddr;
-wire i_l2tlb_wren = ( & i_ext_mmu_rd_ack);
-wire [`PTE_WIDTH - 1 : 0] i_l2tlb_pte = i_ext_mmu_rdat[`PTE_WIDTH - 1 : 0];
-wire [`PHY_ADDR_WIDTH - 1 : 0] i_l2tlb_paddr = mmu_paddr;
+wire i_l2tlb_wren = ;
+wire [`PTE_WIDTH - 1 : 0] i_l2tlb_pte = ;
+wire [`PHY_ADDR_WIDTH - 1 : 0] i_l2tlb_paddr = ;
 
 wire o_l2tlb_hit;
 wire [`L2TLB_TLB_WIDTH - 1 : 0] o_l2tlb_tlb;
@@ -147,19 +143,16 @@ l2tlb_module l2tlb (
 	.rst_n		  (rst_n)
 );
 
-wire [`PHY_ADDR_WIDTH - 1 : 0] l2tlb_paddr = {o_l2tlb_paddr, mmu_vaddr[11 : 0]};
-
-//  PTE_CACHE
+//	PTE_CACHE
 wire i_pte_cache_rden = (i_dtlb_mmu_vld | i_itlb_mmu_vld);
-wire [`CORE_PC_WIDTH - 1 : 0] i_pte_cache_vaddr = mmu_vaddr;
-wire i_pte_cache_wren = ( & i_ext_mmu_rd_ack);
+wire [`CORE_PC_WIDTH - 1 : 0] i_pte_cache_vaddr = mmu_vaddr_r;
+wire i_pte_cache_wren = (mmu_need_load & mmu_load_arb_vld & i_ext_mmu_rd_ack);
 wire [1 : 0] i_pte_cache_level = (pte_level_1 ? 2'b00 : 2'b11);
 wire [`PTE_WIDTH - 1 : 0] i_pte_cache_pte = pte;
 
 wire o_pte_cache_hit;
 wire [1 : 0] o_pte_cache_level;
 wire [`PTE_CACHE_DATA_WIDTH - 1 : 0] o_pte_cache_pte;
-
 pte_cache_module pte_cache ( 
 	.i_csr_rv_mode		  (i_csr_rv_mode),
 	.i_pte_cache_satp	  (i_csr_mmu_satp),
@@ -174,21 +167,20 @@ pte_cache_module pte_cache (
 	.i_pte_cache_pte	  (i_pte_cache_pte),
 
 	.o_pte_cache_hit	  (o_pte_cache_hit),
-	.o_pte_cache_level	  (o_pte_cache_level),
+	.o_pte_cache_level	  (),
 	.o_pte_cache_pte	  (o_pte_cache_pte),
 
 	.clk	 			  (clk),
 	.rst_n				  (rst_n)
 );
 
-wire [`PHY_ADDR_WIDTH - 1 : 0] pte_cache_paddr = ({`PHY_ADDR_WIDTH{(o_pte_cache_level == 2'b00)}} & {o_pte_cache_pte[31 : 20], mmu_paddr[21 : 0]})
-                                               | ({`PHY_ADDR_WIDTH{(o_pte_cache_level == 2'b11)}} & {o_pte_cache_pte[31 : 10], mmu_paddr[11 : 0]});
 
-wire mmu_need_load = ((|rr_arb_gnt_vec) & (~o_l2tlb_hit) & (~o_pte_cache_hit));
+wire mmu_need_load = ((|rr_arb_gnt_vec) & ((~o_l2tlb_hit) | (~o_pte_cache_hit)));
 
+//
 //  Exception
 wire [`PTE_WIDTH - 1 : 0] pte = i_ext_mmu_rdat[`PTE_WIDTH - 1 : 0];
-wire pte_level_1 = ((pte[`PTE_V] == 1'b1) & ((pte[`PTE_R] == 1'b1) | (pte[`PTE_W] == 1'b1)));
+wire pte_level_1 = ((pte[`PTE_V] == 1'b1) & ((pte[`PTE_R] == 1'b1) | (pte[`PTE_X] == 1'b1)));
 
 wire [2 : 0] mmu_tlb_excp_vec;
 
@@ -209,13 +201,13 @@ assign mmu_tlb_excp_vec = {
 							((~pte_level_1) & mmu_tlb_excp_1_vec)
 						,	(pte_level_1 ? mmu_tlb_excp_0_nxt : mmu_tlb_excp_0_r)
 						};
+
 //
-wire [`PHY_ADDR_WIDTH - 1 : 0] mmu_paddr = ({`PHY_ADDR_WIDTH{((|rr_arb_gnt_vec) & o_l2tlb_hit)                     }} & l2tlb_paddr    )
-                                         | ({`PHY_ADDR_WIDTH{((|rr_arb_gnt_vec) & (~o_l2tlb_hit) & o_pte_cache_hit)}} & pte_cache_paddr)
-                                         | ({`PHY_ADDR_WIDTH{(mmu_need_load                                       )}} & mmu_pte_paddr  );
+wire [`PHY_ADDR_WIDTH - 1 : 0] mmu_paddr = ? 
+										 : (pte_level_1 ? {pte[31 : 20], mmu_vaddr[21 : 0]} : {pte[31 : 10], mmu_vaddr_r[11 : 0]});
 
 assign {
-        o_mmu_itlb_paddr
+        o_mmu_itlb_paddr 
     ,   o_mmu_dtlb_paddr
 } = {
         mmu_paddr
@@ -282,13 +274,16 @@ wire mmu_mem_arb_rd = (|load_arb_gnt_vec);
 wire [2 : 0] mmu_mem_arb_size = (mem_arb_gnt_vec[0] ? mmu_load_arb_size : 3'd4);
 wire [`PHY_ADDR_WIDTH - 1 : 0] mmu_mem_arb_paddr = ((mmu_need_load | mem_arb_gnt_vec[0]) ? mmu_load_arb_paddr : i_exu_mem_waddr);
 
+wire [2 : 0] mmu_burst_size = ;
+
+//	MEM 
 localparam	MMU_CTR_WIDTH = 3;
 localparam  MMU_CTR_1 = 3'd1,
             MMU_CTR_2 = 3'd2,
             MMU_CTR_3 = 3'd3,
 			MMU_CTR_4 = 3'd4;
 wire [2 : 0] mem_ctr_r, mem_ctr_nxt;
-wire mem_ctr_set = (((mmu_need_load | (|mem_arb_gnt_vec)) & (~mem_ctr_flag_r)) & (~i_ext_mmu_rdy));
+wire mem_ctr_set = ((mmu_need_load | (|mem_arb_gnt_vec)) & (~mem_ctr_flag_r));
 wire mem_ctr_inc = (~mem_last_cycle);
 wire mem_ctr_ena = (mem_ctr_set | mem_ctr_inc);
 
@@ -320,18 +315,18 @@ gnrl_dfflr #(
     .DATA_WIDTH   (1),
     .INITIAL_VALUE(0)
 ) mem_ctr_flag_dfflr (mem_ctr_flag_ena, mem_ctr_flag_nxt, mem_ctr_flag_r, clk, rst_n);
-
 //
+
 assign o_mem_ext_wren = mmu_mem_arb_wr;
 assign o_mem_ext_rden = mmu_mem_arb_rd;
 assign o_mem_ext_mask = ({`BYTE_MASK_WIDTH{mem_ctr_1th}} & i_exu_mem_wmask[15 :  0])
                       | ({`BYTE_MASK_WIDTH{mem_ctr_2th}} & i_exu_mem_wmask[31 : 16])
                       | ({`BYTE_MASK_WIDTH{mem_ctr_3th}} & i_exu_mem_wmask[47 : 32])
                       | ({`BYTE_MASK_WIDTH{mem_ctr_4th}} & i_exu_mem_wmask[63 : 48]);
-assign o_mem_ext_burst = mmu_load_arb_size;
+assign o_mem_ext_burst = mmu_burst_size;
 assign o_mem_ext_burst_vld = (~mem_last_cycle);
 assign o_mem_ext_burst_start = mem_ctr_1th;
-assign o_mem_ext_burst_end = mem_ctr_4th;
+assign o_mem_ext_burst_end = (mem_ctr_4th);
 assign o_mem_ext_paddr = mmu_mem_arb_paddr;
 assign o_mem_ext_wdat = ({128{mem_ctr_1th}} & i_exu_mem_wdat[127 :   0])
                       | ({128{mem_ctr_2th}} & i_exu_mem_wdat[255 : 128])
