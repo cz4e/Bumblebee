@@ -23,7 +23,7 @@ module mmu_module (
 	input										    i_icache_mem_rden,  //  ICACHE
 	input	[`PHY_ADDR_WIDTH - 1	: 0]			i_icache_mem_raddr,
 	input 											i_ext_mmu_rd_ack,
-	input 	[`MEM_SIZE_WIDTH - 1	: 0]			i_ext_mmu_rdat,
+	input 	[127					: 0]			i_ext_mmu_rdat,
 	input 											i_ext_mmu_wr_ack,
 	input 											i_ext_mmu_rdy,
 
@@ -116,12 +116,13 @@ wire [`PHY_ADDR_WIDTH - 1 : 0] pte_addr_1 = {pte[31 : 10], mmu_vaddr[31 : 22], 2
 wire [`PHY_ADDR_WIDTH - 1 : 0] pte_paddr = ({`PHY_ADDR_WIDTH{mmu_sta_is_srch_1}} & pte_addr_0)
                                          | ({`PHY_ADDR_WIDTH{mmu_sta_is_srch_2}} & pte_addr_1);
 
-wire [`PHY_ADDR_WIDTH - 1 : 0] mmu_pte_paddr = (pte_level_1 ? {pte[31 : 20], mmu_vaddr[21 : 0]} : {pte[31 : 10], mmu_vaddr[11 : 0]});
+wire [`PHY_ADDR_WIDTH - 1 : 0] mmu_pte_paddr = ({`PHY_ADDR_WIDTH{pte_level_1}} & {pte[31 : 20], mmu_vaddr[21 : 0]})
+											 | ({`PHY_ADDR_WIDTH{pte_level_2}} & {pte[31 : 10], mmu_vaddr[11 : 0]});
 
 //  L2TLB
 wire i_l2tlb_rden = (|rr_arb_gnt_vec[1 : 0]);
 wire [`CORE_PC_WIDTH - 1 : 0] i_l2tlb_vaddr = mmu_vaddr;
-wire i_l2tlb_wren = ( & i_ext_mmu_rd_ack);
+wire i_l2tlb_wren = i_pte_cache_wren;
 wire [`PTE_WIDTH - 1 : 0] i_l2tlb_pte = i_ext_mmu_rdat[`PTE_WIDTH - 1 : 0];
 wire [`PHY_ADDR_WIDTH - 1 : 0] i_l2tlb_paddr = mmu_paddr;
 
@@ -152,7 +153,7 @@ wire [`PHY_ADDR_WIDTH - 1 : 0] l2tlb_paddr = {o_l2tlb_paddr, mmu_vaddr[11 : 0]};
 //  PTE_CACHE
 wire i_pte_cache_rden = (i_dtlb_mmu_vld | i_itlb_mmu_vld);
 wire [`CORE_PC_WIDTH - 1 : 0] i_pte_cache_vaddr = mmu_vaddr;
-wire i_pte_cache_wren = ( & i_ext_mmu_rd_ack);
+wire i_pte_cache_wren = ((pte_level_1 | pte_level_2) & i_ext_mmu_rd_ack);
 wire [1 : 0] i_pte_cache_level = (pte_level_1 ? 2'b00 : 2'b11);
 wire [`PTE_WIDTH - 1 : 0] i_pte_cache_pte = pte;
 
@@ -188,7 +189,9 @@ wire mmu_need_load = ((|rr_arb_gnt_vec) & (~o_l2tlb_hit) & (~o_pte_cache_hit));
 
 //  Exception
 wire [`PTE_WIDTH - 1 : 0] pte = i_ext_mmu_rdat[`PTE_WIDTH - 1 : 0];
-wire pte_level_1 = ((pte[`PTE_V] == 1'b1) & ((pte[`PTE_R] == 1'b1) | (pte[`PTE_W] == 1'b1)));
+wire pte_level_1 = ((pte[`PTE_V] == 1'b1) & ((pte[`PTE_R] == 1'b1) | (pte[`PTE_X] == 1'b1)));
+wire pte_mid = ((pte[`PTE_V] == 1'b1) & ((pte[`PTE_X] == 1'b0) & (pte[`PTE_W] == 1'b0) & (pte[`PTE_R] == 1'b0)));
+wire pte_level_2 = ((pte[`PTE_V] == 1'b1) & ((pte[`PTE_X] == 1'b0) & (pte[`PTE_W] == 1'b0) & (pte[`PTE_R] == 1'b0)));
 
 wire [2 : 0] mmu_tlb_excp_vec;
 
@@ -206,7 +209,7 @@ wire [1 : 0] mmu_tlb_excp_1_vec = {
 								};
 
 assign mmu_tlb_excp_vec = {
-							((~pte_level_1) & mmu_tlb_excp_1_vec)
+							({2{pte_level_2}} & mmu_tlb_excp_1_vec)
 						,	(pte_level_1 ? mmu_tlb_excp_0_nxt : mmu_tlb_excp_0_r)
 						};
 //
