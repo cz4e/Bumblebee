@@ -10,6 +10,7 @@ module mem_ctrl_module (
     input                                           i_mem_ext_burst_start,
     input                                           i_mem_ext_burst_end,
     input                                           i_mem_ext_burst_vld,
+    input   [2                      : 0]            i_mem_ext_burst_size,
 
     output                                          o_ext_mmu_rd_ack,
     output                                          o_ext_mmu_wr_ack,
@@ -43,15 +44,15 @@ gnrl_dfflr #(
 ) mem_op_dfflr (mem_op_ena, mem_op_nxt, mem_op_r, clk, rst_n);
 
 //  Counter
-localparam  MEM_CTR_WIDTH = 3;
-localparam  MEM_CTR_1 = 3'd1,
-            MEM_CTR_2 = 3'd2,
-            MEM_CTR_3 = 3'd3,
-            MEM_CTR_4 = 3'd4;
+localparam  MEM_CTR_WIDTH = 2;
+localparam  MEM_CTR_0 = 2'd0,
+            MEM_CTR_1 = 2'd1,
+            MEM_CTR_2 = 2'd2,
+            MEM_CTR_3 = 2'd3;
 
 wire [MEM_CTR_WIDTH - 1 : 0] mem_ctr_r, mem_ctr_nxt;
 wire mem_ctr_set = rdy_flag_clr;
-wire mem_ctr_inc = (~rdy_flag_set);
+wire mem_ctr_inc = ((~rdy_flag_r) & i_mem_ext_burst_vld);
 wire mem_ctr_ena = (mem_ctr_set | mem_ctr_inc);
 
 assign mem_ctr_nxt = (mem_ctr_set ? MEM_CTR_1 : (mem_ctr_r + 3'd1));
@@ -61,39 +62,67 @@ gnrl_dfflr #(
     .INITIAL_VALUE(0)
 ) mem_ctr_dfflr (mem_ctr_ena, mem_ctr_nxt, mem_ctr_r, clk, rst_n);
 
-wire mem_ctr_last_cycle = (mem_ctr_r == MEM_CTR_4);
+wire mem_ctr_1th = (mem_ctr_r == MEM_CTR_1);
+wire mem_ctr_2th = (mem_ctr_r == MEM_CTR_2);
+wire mem_ctr_3th = (mem_ctr_r == MEM_CTR_3);
+wire mem_ctr_last_cycle = (mem_ctr_r == MEM_CTR_3);
 
 //
-wire [127 : 0] mem_sft_0_r;
-wire [127 : 0] mem_sft_1_r;
-wire [127 : 0] mem_sft_2_r;
-wire [127 : 0] mem_sft_3_r;
+wire [127 : 0] mem_dat_sft_0_r;
+wire [127 : 0] mem_dat_sft_1_r;
+wire [127 : 0] mem_dat_sft_2_r;
 
 wire [511 : 0] mem_dat_vec = {
-                                mem_sft_3_r
-                            ,   mem_sft_2_r
-                            ,   mem_sft_1_r
-                            ,   mem_sft_0_r
+                                i_mem_ext_wdat
+                            ,   mem_dat_sft_2_r
+                            ,   mem_dat_sft_1_r
+                            ,   mem_dat_sft_0_r
                             };
 
-wire mem_sft_ena = (~rdy_flag_set);
+wire mem_sft_ena = mem_ctr_inc;
 
+wire mem_sft_2_ena = (mem_sft_ena & mem_ctr_2th);
 gnrl_dffl #( 
     .DATA_WIDTH(128)
-) mem_sft_3_dffl (mem_sft_ena, i_mem_ext_wdat, mem_sft_3_r, clk);
+) mem_dat_sft_2_dffl (mem_sft_2_ena, i_mem_ext_wdat, mem_dat_sft_2_r, clk);
 
+wire mem_sft_1_ena = (mem_sft_ena & mem_ctr_1th);
 gnrl_dffl #( 
     .DATA_WIDTH(128)
-) mem_sft_2_dffl (mem_sft_ena, mem_sft_3_r, mem_sft_2_r, clk);
+) mem_dat_sft_1_dffl (mem_sft_1_ena, i_mem_ext_wdat, mem_dat_sft_1_r, clk);
 
+
+wire mem_sft_0_ena = (mem_sft_ena & mem_ctr_0th);
 gnrl_dffl #( 
     .DATA_WIDTH(128)
-) mem_sft_1_dffl (mem_sft_ena, mem_sft_2_r, mem_sft_1_r, clk);
+) mem_dat_sft_0_dffl (mem_sft_0_ena, i_mem_ext_wdat, mem_dat_sft_0_r, clk);
+
+//
+wire [15 : 0] mem_mask_sft_0_r;
+wire [15 : 0] mem_mask_sft_1_r;
+wire [15 : 0] mem_mask_sft_2_r;
+
+wire [63 : 0] mem_mask_vec = {
+                                i_mem_ext_mask
+                            ,   mem_dat_sft_2_r
+                            ,   mem_dat_sft_1_r
+                            ,   mem_dat_sft_0_r
+                            };
 
 gnrl_dffl #( 
-    .DATA_WIDTH(128)
-) mem_sft_0_dffl (mem_sft_ena, mem_sft_1_r, mem_sft_0_r, clk);
+    .DATA_WIDTH(16)
+) mem_mask_sft_2_dffl (mem_sft_2_ena, i_mem_ext_mask, mem_mask_sft_2_r, clk);
 
+gnrl_dffl #( 
+    .DATA_WIDTH(16)
+) mem_mask_sft_1_dffl (mem_sft_1_ena, i_mem_ext_mask, mem_mask_sft_1_r, clk);
+
+gnrl_dffl #( 
+    .DATA_WIDTH(16)
+) mem_mask_sft_0_dffl (mem_sft_0_ena, i_mem_ext_mask, mem_mask_sft_0_r, clk);
+
+//
+wire [`PHY_ADDR_WIDTH - 1 : 0] mem_paddr;
 
 
 //
@@ -106,9 +135,9 @@ mem_module #(
     .i_cs       (i_cs),
     .i_wren     (mem_op_r),
     .i_din      (mem_dat_vec),
-    .i_addr     (i_mem_ext_paddr),
-    .i_byte_mask(),
-    .o_dout     (),
+    .i_addr     (mem_paddr),
+    .i_byte_mask(mem_mask_vec),
+    .o_dout     (mem_rdat),
 
     .clk        (clk),
     .rst_n      (rst_n)
@@ -117,7 +146,11 @@ mem_module #(
 
 assign o_ext_mmu_rd_ack = (mem_ctr_last_cycle & (~mem_op_r));
 assign o_ext_mmu_wr_ack = (mem_ctr_last_cycle & mem_op_r);
-assign o_ext_mmu_rdat   = ()
+
+//
+wire [511 : 0] mem_rdat;
+
+assign o_ext_mmu_rdat   = ({128{()}});
 
 endmodule   //  mem_ctrl_module
 
