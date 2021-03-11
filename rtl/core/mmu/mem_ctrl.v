@@ -122,9 +122,13 @@ gnrl_dffl #(
 ) mem_mask_sft_0_dffl (mem_sft_0_ena, i_mem_ext_mask, mem_mask_sft_0_r, clk);
 
 //
-wire [`PHY_ADDR_WIDTH - 1 : 0] mem_paddr;
+wire mem_cr_vld = ((i_mem_ext_paddr[8 : 0] == 9'h180) & ((i_mem_ext_burst == 3'd2) | (i_mem_ext_burst == 3'd3) | (i_mem_ext_burst == 3'd4)))
+                | ((i_mem_ext_paddr[8 : 0] == 9'h100) & ((i_mem_ext_burst == 3'd3) | (i_mem_ext_burst == 3'd4)))
+                | ((i_mem_ext_paddr[8 : 0] == 9'h080) & ((i_mem_ext_burst == 3'd4)));
+wire [`PHY_ADDR_WIDTH - 1 : 0] mem_paddr = ({`PHY_ADDR_WIDTH{(~mem_cr_flag_r)}} & i_mem_ext_paddr                                          )
+                                         | ({`PHY_ADDR_WIDTH{mem_cr_flag_r   }} & {(i_mem_ext_paddr[`PHY_ADDR_WIDTH - 1 : 9] + 1'd1), 9'h0});
 
-
+wire [8 : 0] mem_offset = i_mem_ext_paddr[8 : 0];
 //
 wire i_cs = (~rdy_flag_r);
 
@@ -150,7 +154,86 @@ assign o_ext_mmu_wr_ack = (mem_ctr_last_cycle & mem_op_r);
 //
 wire [511 : 0] mem_rdat;
 
-assign o_ext_mmu_rdat   = ({128{()}});
+wire [511 : 0] mem_rdat_0;
+wire [511 : 0] mem_rdat_1 = mem_rdat;
+wire [1023 : 0] mem_rdat_vec = ({1024{mem_cr_vld   }} & {mem_rdat_1, mem_rdat_0})
+                             | ({1024{(~mem_cr_vld)}} & {512'h0,     mem_rdat_1});
+wire mem_rdat_ena = (mem_cr_vld & (~rdy_flag_r));
+
+gnrl_dffl #( 
+    .DATA_WIDTH(512)
+) mem_rdat_dffl (mem_rdat_ena, mem_rdat_1, mem_rdat_0, clk);
+
+wire [511 : 0] mem_rdat_sel = ({512{(mem_offset == 6'h0 )}} & mem_rdat_vec[511  :   0])
+                            | ({512{(mem_offset == 6'h1 )}} & mem_rdat_vec[519  :   8])
+                            | ({512{(mem_offset == 6'h2 )}} & mem_rdat_vec[527  :  16])
+                            | ({512{(mem_offset == 6'h3 )}} & mem_rdat_vec[535  :  24])
+                            | ({512{(mem_offset == 6'h4 )}} & mem_rdat_vec[543  :  32])
+                            | ({512{(mem_offset == 6'h5 )}} & mem_rdat_vec[551  :  40])
+                            | ({512{(mem_offset == 6'h6 )}} & mem_rdat_vec[559  :  48])
+                            | ({512{(mem_offset == 6'h7 )}} & mem_rdat_vec[567  :  56])
+                            | ({512{(mem_offset == 6'h8 )}} & mem_rdat_vec[575  :  64])
+                            | ({512{(mem_offset == 6'h9 )}} & mem_rdat_vec[583  :  72])
+                            | ({512{(mem_offset == 6'h10)}} & mem_rdat_vec[591  :  80])
+                            | ({512{(mem_offset == 6'h11)}} & mem_rdat_vec[599  :  88])
+                            | ({512{(mem_offset == 6'h12)}} & mem_rdat_vec[607  :  96])
+                            | ({512{(mem_offset == 6'h13)}} & mem_rdat_vec[615  : 104])
+                            | ({512{(mem_offset == 6'h14)}} & mem_rdat_vec[623  : 112])
+                            | ({512{(mem_offset == 6'h15)}} & mem_rdat_vec[631  : 120])
+                            | ({512{(mem_offset == 6'h16)}} & mem_rdat_vec[639  : 128])
+                            | ({512{(mem_offset == 6'h17)}} & mem_rdat_vec[647  : 136])
+                            | ({512{(mem_offset == 6'h18)}} & mem_rdat_vec[655  : 144])
+                            | ({512{(mem_offset == 6'h19)}} & mem_rdat_vec[663  : 152])
+                            | ({512{(mem_offset == 6'h20)}} & mem_rdat_vec[671  : 160])
+                            | ({512{(mem_offset == 6'h21)}} & mem_rdat_vec[679  : 168])
+                            | ({512{(mem_offset == 6'h22)}} & mem_rdat_vec[687  : 176])
+                            | ({512{(mem_offset == 6'h23)}} & mem_rdat_vec[695  : 184])
+                            | ({512{(mem_offset == 6'h24)}} & mem_rdat_vec[703  : 192])
+                            | ({512{(mem_offset == 6'h25)}} & mem_rdat_vec[711  : 200])
+                            | ({512{(mem_offset == 6'h26)}} & mem_rdat_vec[719  : 208])
+                            | ({512{(mem_offset == 6'h27)}} & mem_rdat_vec[727  : 216])
+                            | ({512{(mem_offset == 6'h28)}} & mem_rdat_vec[735  : 224])
+                            | ({512{(mem_offset == 6'h29)}} & mem_rdat_vec[743  : 232])
+                            | ({512{(mem_offset == 6'h30)}} & mem_rdat_vec[751  : 240])
+                            | ({512{(mem_offset == 6'h31)}} & mem_rdat_vec[759  : 248])
+                            | ({512{(mem_offset == 6'h32)}} & mem_rdat_vec[767  : 256])
+                            | ({512{(mem_offset == 6'h33)}} & mem_rdat_vec[775  : 264])
+                            | ({512{(mem_offset == 6'h34)}} & mem_rdat_vec[783  : 272])
+                            | ({512{(mem_offset == 6'h35)}} & mem_rdat_vec[791  : 280])
+                            | ({512{(mem_offset == 6'h36)}} & mem_rdat_vec[799  : 288])
+                            | ({512{(mem_offset == 6'h37)}} & mem_rdat_vec[807  : 296])
+                            | ({512{(mem_offset == 6'h38)}} & mem_rdat_vec[815  : 304])
+                            | ({512{(mem_offset == 6'h39)}} & mem_rdat_vec[823  : 312])
+                            | ({512{(mem_offset == 6'h40)}} & mem_rdat_vec[831  : 320])
+                            | ({512{(mem_offset == 6'h41)}} & mem_rdat_vec[839  : 328])
+                            | ({512{(mem_offset == 6'h42)}} & mem_rdat_vec[847  : 336])
+                            | ({512{(mem_offset == 6'h43)}} & mem_rdat_vec[855  : 344])
+                            | ({512{(mem_offset == 6'h44)}} & mem_rdat_vec[863  : 352])
+                            | ({512{(mem_offset == 6'h45)}} & mem_rdat_vec[871  : 360])
+                            | ({512{(mem_offset == 6'h46)}} & mem_rdat_vec[879  : 368])
+                            | ({512{(mem_offset == 6'h47)}} & mem_rdat_vec[887  : 376])
+                            | ({512{(mem_offset == 6'h48)}} & mem_rdat_vec[895  : 384])
+                            | ({512{(mem_offset == 6'h49)}} & mem_rdat_vec[903  : 392])
+                            | ({512{(mem_offset == 6'h50)}} & mem_rdat_vec[911  : 400])
+                            | ({512{(mem_offset == 6'h51)}} & mem_rdat_vec[919  : 408])
+                            | ({512{(mem_offset == 6'h52)}} & mem_rdat_vec[927  : 416])
+                            | ({512{(mem_offset == 6'h53)}} & mem_rdat_vec[935  : 424])
+                            | ({512{(mem_offset == 6'h54)}} & mem_rdat_vec[943  : 432])
+                            | ({512{(mem_offset == 6'h55)}} & mem_rdat_vec[951  : 440])
+                            | ({512{(mem_offset == 6'h56)}} & mem_rdat_vec[959  : 448])
+                            | ({512{(mem_offset == 6'h57)}} & mem_rdat_vec[967  : 456])
+                            | ({512{(mem_offset == 6'h58)}} & mem_rdat_vec[975  : 464])
+                            | ({512{(mem_offset == 6'h59)}} & mem_rdat_vec[983  : 472])
+                            | ({512{(mem_offset == 6'h60)}} & mem_rdat_vec[991  : 480])
+                            | ({512{(mem_offset == 6'h61)}} & mem_rdat_vec[999  : 488])
+                            | ({512{(mem_offset == 6'h62)}} & mem_rdat_vec[1007 : 496])
+                            | ({512{(mem_offset == 6'h63)}} & mem_rdat_vec[1015 : 504]);
+
+
+assign o_ext_mmu_rdat = ({128{mem_rd_ctr_1th}} & mem_rdat_sel[127 :   0])
+                      | ({128{mem_rd_ctr_2th}} & mem_rdat_sel[255 : 128])
+                      | ({128{mem_rd_ctr_3th}} & mem_rdat_sel[383 : 256])
+                      | ({128{mem_rd_ctr_4th}} & mem_rdat_sel[511 : 384]);
 
 endmodule   //  mem_ctrl_module
 
