@@ -341,6 +341,9 @@ assign o_mem_ext_wdat = ({128{mem_ctr_1th}} & i_exu_mem_wdat[127 :   0])
                       | ({128{mem_ctr_3th}} & i_exu_mem_wdat[383 : 256])
                       | ({128{mem_ctr_4th}} & i_exu_mem_wdat[511 : 384]);
 
+//
+
+
 endmodule   //  mmu_module
 
 `endif /*   !__MMU_MMU_V__! */

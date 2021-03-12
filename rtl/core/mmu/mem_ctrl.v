@@ -4,13 +4,12 @@ module mem_ctrl_module (
     input                                           i_mem_ext_rden,
     input                                           i_mem_ext_wren,
     input   [`BYTE_MASK_WIDTH - 1   : 0]            i_mem_ext_mask,
-    input   [2                      : 0]            i_mem_ext_burst,
+    input   [2                      : 0]            i_mem_ext_burst_size,
     input   [`PHY_ADDR_WIDTH - 1    : 0]            i_mem_ext_paddr,
     input   [127                    : 0]            i_mem_ext_wdat,
     input                                           i_mem_ext_burst_start,
     input                                           i_mem_ext_burst_end,
     input                                           i_mem_ext_burst_vld,
-    input   [2                      : 0]            i_mem_ext_burst_size,
 
     output                                          o_ext_mmu_rd_ack,
     output                                          o_ext_mmu_wr_ack,
@@ -50,22 +49,22 @@ localparam  MEM_CTR_0 = 2'd0,
             MEM_CTR_2 = 2'd2,
             MEM_CTR_3 = 2'd3;
 
-wire [MEM_CTR_WIDTH - 1 : 0] mem_ctr_r, mem_ctr_nxt;
-wire mem_ctr_set = rdy_flag_clr;
-wire mem_ctr_inc = ((~rdy_flag_r) & i_mem_ext_burst_vld);
-wire mem_ctr_ena = (mem_ctr_set | mem_ctr_inc);
+wire [MEM_CTR_WIDTH - 1 : 0] mem_wr_ctr_r, mem_ctr_nxt;
+wire mem_ctr_set = (i_mem_ext_wren & rdy_flag_clr & i_mem_ext_burst_vld);
+wire mem_wr_ctr_inc = ((~rdy_flag_r) & i_mem_ext_burst_vld);
+wire mem_wr_ctr_ena = (mem_ctr_set | mem_wr_ctr_inc);
 
-assign mem_ctr_nxt = (mem_ctr_set ? MEM_CTR_1 : (mem_ctr_r + 3'd1));
+assign mem_wr_ctr_nxt = (mem_wr_ctr_set ? MEM_CTR_1 : (mem_wr_ctr_r + 3'd1));
 
 gnrl_dfflr #( 
     .DATA_WIDTH   (MEM_CTR_WIDTH),
     .INITIAL_VALUE(0)
-) mem_ctr_dfflr (mem_ctr_ena, mem_ctr_nxt, mem_ctr_r, clk, rst_n);
+) mem_wr_ctr_dfflr (mem_wr_ctr_ena, mem_wr_ctr_nxt, mem_wr_ctr_r, clk, rst_n);
 
-wire mem_ctr_1th = (mem_ctr_r == MEM_CTR_1);
-wire mem_ctr_2th = (mem_ctr_r == MEM_CTR_2);
-wire mem_ctr_3th = (mem_ctr_r == MEM_CTR_3);
-wire mem_ctr_last_cycle = (mem_ctr_r == MEM_CTR_3);
+wire mem_wr_ctr_1th = (mem_wr_ctr_r == MEM_CTR_1);
+wire mem_wr_ctr_2th = (mem_wr_ctr_r == MEM_CTR_2);
+wire mem_wr_ctr_3th = (mem_wr_ctr_r == MEM_CTR_3);
+wire mem_wr_ctr_last_cycle = (mem_wr_ctr_r == MEM_CTR_3);
 
 //
 wire [127 : 0] mem_dat_sft_0_r;
@@ -79,20 +78,20 @@ wire [511 : 0] mem_dat_vec = {
                             ,   mem_dat_sft_0_r
                             };
 
-wire mem_sft_ena = mem_ctr_inc;
+wire mem_sft_ena = mem_wr_ctr_inc;
 
-wire mem_sft_2_ena = (mem_sft_ena & mem_ctr_2th);
+wire mem_sft_2_ena = (mem_sft_ena & mem_wr_ctr_2th);
 gnrl_dffl #( 
     .DATA_WIDTH(128)
 ) mem_dat_sft_2_dffl (mem_sft_2_ena, i_mem_ext_wdat, mem_dat_sft_2_r, clk);
 
-wire mem_sft_1_ena = (mem_sft_ena & mem_ctr_1th);
+wire mem_sft_1_ena = (mem_sft_ena & mem_wr_ctr_1th);
 gnrl_dffl #( 
     .DATA_WIDTH(128)
 ) mem_dat_sft_1_dffl (mem_sft_1_ena, i_mem_ext_wdat, mem_dat_sft_1_r, clk);
 
 
-wire mem_sft_0_ena = (mem_sft_ena & mem_ctr_0th);
+wire mem_sft_0_ena = (mem_sft_ena & mem_wr_ctr_0th);
 gnrl_dffl #( 
     .DATA_WIDTH(128)
 ) mem_dat_sft_0_dffl (mem_sft_0_ena, i_mem_ext_wdat, mem_dat_sft_0_r, clk);
@@ -122,13 +121,12 @@ gnrl_dffl #(
 ) mem_mask_sft_0_dffl (mem_sft_0_ena, i_mem_ext_mask, mem_mask_sft_0_r, clk);
 
 //
-wire mem_cr_vld = ((i_mem_ext_paddr[8 : 0] == 9'h180) & ((i_mem_ext_burst == 3'd2) | (i_mem_ext_burst == 3'd3) | (i_mem_ext_burst == 3'd4)))
-                | ((i_mem_ext_paddr[8 : 0] == 9'h100) & ((i_mem_ext_burst == 3'd3) | (i_mem_ext_burst == 3'd4)))
-                | ((i_mem_ext_paddr[8 : 0] == 9'h080) & ((i_mem_ext_burst == 3'd4)));
+wire mem_cr_vld = (i_mem_ext_paddr[5 : 0] != 6'h0);
+
 wire [`PHY_ADDR_WIDTH - 1 : 0] mem_paddr = ({`PHY_ADDR_WIDTH{(~mem_cr_flag_r)}} & i_mem_ext_paddr                                          )
                                          | ({`PHY_ADDR_WIDTH{mem_cr_flag_r   }} & {(i_mem_ext_paddr[`PHY_ADDR_WIDTH - 1 : 9] + 1'd1), 9'h0});
 
-wire [8 : 0] mem_offset = i_mem_ext_paddr[8 : 0];
+wire [5 : 0] mem_offset = i_mem_ext_paddr[5 : 0];
 //
 wire i_cs = (~rdy_flag_r);
 
@@ -148,8 +146,8 @@ mem_module #(
 );
 
 
-assign o_ext_mmu_rd_ack = (mem_ctr_last_cycle & (~mem_op_r));
-assign o_ext_mmu_wr_ack = (mem_ctr_last_cycle & mem_op_r);
+assign o_ext_mmu_rd_ack = (mem_wr_ctr_last_cycle & (~mem_op_r));
+assign o_ext_mmu_wr_ack = (mem_wr_ctr_last_cycle & mem_op_r);
 
 //
 wire [511 : 0] mem_rdat;
@@ -163,6 +161,11 @@ wire mem_rdat_ena = (mem_cr_vld & (~rdy_flag_r));
 gnrl_dffl #( 
     .DATA_WIDTH(512)
 ) mem_rdat_dffl (mem_rdat_ena, mem_rdat_1, mem_rdat_0, clk);
+
+
+wire mem_rdat_delay = (i_mem_ext_rden & mem_cr_vld & rdy_flag_r);
+
+
 
 wire [511 : 0] mem_rdat_sel = ({512{(mem_offset == 6'h0 )}} & mem_rdat_vec[511  :   0])
                             | ({512{(mem_offset == 6'h1 )}} & mem_rdat_vec[519  :   8])
@@ -229,6 +232,35 @@ wire [511 : 0] mem_rdat_sel = ({512{(mem_offset == 6'h0 )}} & mem_rdat_vec[511  
                             | ({512{(mem_offset == 6'h62)}} & mem_rdat_vec[1007 : 496])
                             | ({512{(mem_offset == 6'h63)}} & mem_rdat_vec[1015 : 504]);
 
+
+
+//  
+localparam  MEM_RD_CTR_WIDTH = 3;
+localparam  MEM_RD_CTR_1 = 3'd1,
+            MEM_RD_CTR_2 = 3'd2,
+            MEM_RD_CTR_3 = 3'd3,
+            MEM_RD_CTR_4 = 3'd4;
+
+wire [MEM_RD_CTR_WIDTH - 1 : 0] mem_rd_ctr_r, mem_rd_ctr_nxt;
+wire mem_rd_ctr_set = (i_mem_ext_rden & rdy_flag_r & i_mem_ext_burst_vld);
+wire mem_rd_ctr_inc = ((~mem_rdat_delay) & (~mem_rd_last_cycle) & i_mem_ext_burst_vld);
+wire mem_rd_ctr_ena = (mem_rd_ctr_set | mem_rd_ctr_inc);
+assign mem_rd_ctr_nxt = (mem_rd_ctr_set ? MEM_RD_CTR_1 : (mem_rd_ctr_r + 3'd1));
+
+gnrl_dfflr #( 
+    .DATA_WIDTH   (MEM_RD_CTR_WIDTH),
+    .INITIAL_VALUE(0)
+) mem_rd_ctr_dfflr (mem_rd_ctr_ena, mem_rd_ctr_nxt, mem_rd_ctr_r, clk, rst_n);
+
+wire mem_rd_ctr_1th = (mem_rd_ctr_r == MEM_RD_CTR_1);
+wire mem_rd_ctr_2th = (mem_rd_ctr_r == MEM_RD_CTR_2);
+wire mem_rd_ctr_3th = (mem_rd_ctr_r == MEM_RD_CTR_3);
+wire mem_rd_ctr_4th = (mem_rd_ctr_r == MEM_RD_CTR_4);
+
+wire mem_rd_last_cycle = ({1(i_mem_ext_burst_size == 3'd1)} & mem_rd_ctr_1th)
+                       | ({1(i_mem_ext_burst_size == 3'd2)} & mem_rd_ctr_2th)
+                       | ({1(i_mem_ext_burst_size == 3'd3)} & mem_rd_ctr_3th)
+                       | ({1(i_mem_ext_burst_size == 3'd4)} & mem_rd_ctr_4th);
 
 assign o_ext_mmu_rdat = ({128{mem_rd_ctr_1th}} & mem_rdat_sel[127 :   0])
                       | ({128{mem_rd_ctr_2th}} & mem_rdat_sel[255 : 128])

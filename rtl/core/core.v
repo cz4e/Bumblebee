@@ -1718,6 +1718,20 @@ wire o_mem_cache_inv_vld;
 wire [`PHY_ADDR_WIDTH - 1 : 0] o_mem_icache_dat;
 wire o_mmu_busy;
 
+wire o_mem_ext_wren;
+wire o_mem_ext_rden;
+wire [`BYTE_MASK_WIDTH - 1 : 0] o_mem_ext_mask;
+wire [2 : 0] o_mem_ext_burst;
+wire [`PHY_ADDR_WIDTH - 1 : 0] o_mem_ext_paddr;
+wire [127 : 0] o_mem_ext_wdat;
+wire o_mem_ext_burst_start;
+wire o_mem_ext_burst_end;
+wire o_mem_ext_burst_vld;
+wire o_mem_rob_flush_done;
+wire [`PHY_ADDR_WIDTH - 1 : 0] o_mem_cache_inv_paddr;
+wire [1 : 0] o_mem_cache_inv_vld;
+wire o_mmu_busy;
+
 mmu_module mmu ( 
     .i_csr_trap_flush     (o_csr_trap_flush),
     .i_exu_mis_flush      (o_exu_mis_flush),
@@ -1739,6 +1753,10 @@ mmu_module mmu (
     .i_exu_mmu_ack        (o_exu_mmu_ack),
     .i_icache_mem_rden    (o_icache_mem_vld),
     .i_icache_mem_raddr   (o_icache_mem_paddr),
+    .i_ext_mmu_rd_ack     (o_ext_mmu_rd_ack),
+    .i_ext_mmu_rdat       (o_ext_mmu_rdat),
+    .i_ext_mmu_wr_ack     (o_ext_mmu_wr_ack),
+    .i_ext_mmu_rdy        (o_ext_mmu_rdy),
 
     .o_mmu_itlb_vld       (o_mmu_itlb_vld),
     .o_mmu_itlb_tlb       (o_mmu_itlb_tlb),
@@ -1753,36 +1771,45 @@ mmu_module mmu (
     .o_mem_exu_dat        (o_mem_exu_dat),
     .o_mem_icache_vld     (o_mem_icache_vld),
     .o_mem_icache_dat     (o_mem_icache_dat),
-    .o_mem_ext_wren       (),
-    .o_mem_ext_rden       (),
-    .o_mem_ext_mask       (),
-    .o_mem_ext_burst      (),
-    .o_mem_ext_wdat       (),
-    .o_mem_ext_burst_start(),
-    .o_mem_ext_burst_end  (),
-    .o_mem_ext_burst_vld  (),
-    .o_mem_rob_flush_done (),
-    .o_mem_cache_inv_paddr(),
-    .o_mem_cache_inv_vld  (),
+    .o_mem_ext_wren       (i_mem_ext_burst_size),
+    .o_mem_ext_rden       (o_mem_ext_rden),
+    .o_mem_ext_mask       (o_mem_ext_mask),
+    .o_mem_ext_burst      (o_mem_ext_burst),
+    .o_mem_ext_wdat       (o_mem_ext_wdat),
+    .o_mem_ext_burst_start(o_mem_ext_burst_start),
+    .o_mem_ext_burst_end  (o_mem_ext_burst_end),
+    .o_mem_ext_burst_vld  (o_mem_ext_burst_vld),
+    .o_mem_rob_flush_done (o_mem_rob_flush_done),
+    .o_mem_cache_inv_paddr(o_mem_cache_inv_paddr),
+    .o_mem_cache_inv_vld  (o_mem_cache_inv_vld),
     .o_mmu_busy           (o_mmu_busy),
 
     .clk                  (clk),
     .rst_n                (rst_n)
 );
 
-mem_module #(
 
-) mem ( 
-    .i_cs       (),
-    .i_wren     (),
-    .i_din      (),
-    .i_addr     (),
-    .i_byte_mask(),
-    .o_dout     (),
-    .clk        (clk),
-    .rst_n      (rst_n)
+wire o_ext_mmu_rd_ack;
+wire o_ext_mmu_wr_ack;
+wire [127 : 0] o_ext_mmu_rdat;
+wire o_ext_mmu_rdy;
+
+mem_ctrl_module mem_ctr ( 
+    .i_mem_ext_rden       (o_mem_ext_rden),
+    .i_mem_ext_wren       (o_mem_ext_wren),
+    .i_mem_ext_mask       (o_mem_ext_mask),
+    .i_mem_ext_burst_size (o_mem_ext_burst),
+    .i_mem_ext_paddr      (o_mem_ext_paddr),
+    .i_mem_ext_wdat       (o_mem_ext_wdat),
+    .i_mem_ext_burst_start(o_mem_ext_burst_start),
+    .i_mem_ext_burst_end  (o_mem_ext_burst_end),
+    .o_ext_mmu_rd_ack     (o_ext_mmu_rd_ack),
+    .o_ext_mmu_wr_ack     (o_ext_mmu_wr_ack),
+    .o_ext_mmu_rdat       (o_ext_mmu_rdat),
+    .o_ext_mmu_rdy        (o_ext_mmu_rdy),
+    .clk                  (clk),
+    .rst_n                (rst_n)
 );
-
 
 //  PLIC
 
