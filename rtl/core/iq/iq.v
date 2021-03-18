@@ -28,7 +28,7 @@ module iq_module (
     input   [3                          : 0]            i_predec_iq_alias_vec_3,
     input   [3                          : 0]            i_predec_iq_match_vec_3,
     input   [3                          : 0]            i_predec_iq_len,
-    input   [`PREDINFO_WIDTH - 1        : 0]            i_predec_iq_predinfo_bus,
+    input   [`BPU_PRED_INFO_WIDTH - 1   : 0]            i_predec_iq_predinfo_bus,
     input   [`EXCEPTION_CODE_WIDTH - 1  : 0]            i_predec_iq_excp_code,
     input                                               i_exu_iq_btac_vld,
     input                                               i_exu_iq_btac_taken,
@@ -690,26 +690,26 @@ assign o_iq_taddr = ({`CORE_PC_WIDTH{iq_btac_taken_0                            
                   | ({`CORE_PC_WIDTH{iq_btac_taken_3 & (~iq_btac_taken_0) & (~iq_btac_taken_1) & (~iq_btac_taken_2)}} & o_btac_rdat_3[32 : 1]);
 
 //
-wire [1 : 0] iq_bpu_taken_pht_entry = ({2{((i_predec_iq_predinfo_bus[`PREDINFO_PHT_ENTRY] == PHT_WT)  & o_iq_bpu_taken)}} & PHT_ST )
-                                    | ({2{((i_predec_iq_predinfo_bus[`PREDINFO_PHT_ENTRY] == PHT_WNT) & o_iq_bpu_taken)}} & PHT_WT )
-                                    | ({2{((i_predec_iq_predinfo_bus[`PREDINFO_PHT_ENTRY] == PHT_SNT) & o_iq_bpu_taken)}} & PHT_WNT);
+wire [1 : 0] iq_bpu_taken_pht_entry = ({2{((i_predec_iq_predinfo_bus[`BPU_INFO_PHT_ENTRY] == PHT_WT)  & o_iq_bpu_taken)}} & PHT_ST )
+                                    | ({2{((i_predec_iq_predinfo_bus[`BPU_INFO_PHT_ENTRY] == PHT_WNT) & o_iq_bpu_taken)}} & PHT_WT )
+                                    | ({2{((i_predec_iq_predinfo_bus[`BPU_INFO_PHT_ENTRY] == PHT_SNT) & o_iq_bpu_taken)}} & PHT_WNT);
 
-wire [1 : 0] iq_bpu_ntaken_pht_entry = ({2{((i_predec_iq_predinfo_bus[`PREDINFO_PHT_ENTRY] == PHT_ST)  & (~o_iq_bpu_taken))}} & PHT_WT )
-                                     | ({2{((i_predec_iq_predinfo_bus[`PREDINFO_PHT_ENTRY] == PHT_WT)  & (~o_iq_bpu_taken))}} & PHT_WNT)
-                                     | ({2{((i_predec_iq_predinfo_bus[`PREDINFO_PHT_ENTRY] == PHT_WNT) & (~o_iq_bpu_taken))}} & PHT_SNT);
+wire [1 : 0] iq_bpu_ntaken_pht_entry = ({2{((i_predec_iq_predinfo_bus[`BPU_INFO_PHT_ENTRY] == PHT_ST)  & (~o_iq_bpu_taken))}} & PHT_WT )
+                                     | ({2{((i_predec_iq_predinfo_bus[`BPU_INFO_PHT_ENTRY] == PHT_WT)  & (~o_iq_bpu_taken))}} & PHT_WNT)
+                                     | ({2{((i_predec_iq_predinfo_bus[`BPU_INFO_PHT_ENTRY] == PHT_WNT) & (~o_iq_bpu_taken))}} & PHT_SNT);
 
 assign o_iq_bpu_vld       = (o_iq_uc_flush | o_iq_flush);
 assign o_iq_bpu_taken     = (iq_taken_0 | iq_taken_1 | iq_taken_2 | iq_taken_3) & (|i_predec_iq_vld);
-assign o_iq_bpu_new_br    = (~(i_predec_iq_predinfo_bus[`PREDINFO_HIT]));
+assign o_iq_bpu_new_br    = (~(i_predec_iq_predinfo_bus[`BPU_INFO_HIT]));
 assign o_iq_bpu_type      = (~(o_iq_uc_flush | iq_btac_uc_taken));
-assign o_iq_bpu_btb_idx   = (i_predec_iq_predinfo_bus[`PREDINFO_BTB_IDX]);
-assign o_iq_bpu_btb_addr  = (i_predec_iq_predinfo_bus[`PREDINFO_ADDR]);
+assign o_iq_bpu_btb_idx   = (i_predec_iq_predinfo_bus[`BPU_INFO_BTB_IDX]);
+assign o_iq_bpu_btb_addr  = (i_predec_iq_predinfo_bus[`BPU_INFO_BTB_ADDR]);
 assign o_iq_bpu_btb_taddr = o_iq_uc_flush ? o_iq_uc_taddr
                           : o_iq_taddr;
-assign o_iq_bpu_pht_idx   = (i_predec_iq_predinfo_bus[`PREDINFO_PHT_IDX]);
+assign o_iq_bpu_pht_idx   = (i_predec_iq_predinfo_bus[`BPU_INFO_PHT_IDX]);
 assign o_iq_bpu_pht_entry = o_iq_bpu_taken ? iq_bpu_taken_pht_entry
                           : iq_bpu_ntaken_pht_entry;
-assign o_iq_bpu_tsucc     = (o_iq_bpu_btb_taddr == i_predec_iq_predinfo_bus[`PREDINFO_TADDR]);
+assign o_iq_bpu_tsucc     = (o_iq_bpu_btb_taddr == i_predec_iq_predinfo_bus[`BPU_INFO_BTB_TADDR]);
 
 endmodule   //  iq_module
 

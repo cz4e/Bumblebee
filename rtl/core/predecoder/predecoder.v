@@ -11,7 +11,7 @@ module predecoder_module (
     input   [`ICACHE_DATA_WIDTH - 1     : 0]            i_cache_predec_bypass_dat,
     input   [`EXCEPTION_CODE_WIDTH - 1  : 0]            i_cache_predec_excp_code,
     input   [`CORE_PC_WIDTH - 1         : 0]            i_ifu_predec_addr,
-    input   [`PREDINFO_WIDTH - 1        : 0]            i_bpu_predinfo_bus,
+    input   [`BPU_PRED_INFO_WIDTH - 1   : 0]            i_bpu_predinfo_bus,
     input                                               i_iq_bpu_vld,
     input                                               i_iq_bpu_taken,
     input                                               i_iq_bpu_new_br,
@@ -33,7 +33,7 @@ module predecoder_module (
     output  [`CORE_PC_WIDTH - 1         : 0]            o_predec_iq_addr_3,
     output  [`INSTR_WIDTH - 1           : 0]            o_predec_iq_instr_3,
     output  [3                          : 0]            o_predec_iq_len,
-    output  [`PREDINFO_WIDTH - 1        : 0]            o_predec_iq_predinfo_bus,
+    output  [`BPU_PRED_INFO_WIDTH - 1   : 0]            o_predec_iq_predinfo_bus,
     output  [5                          : 0]            o_predec_iq_type_0,
     output  [5                          : 0]            o_predec_iq_type_1,
     output  [5                          : 0]            o_predec_iq_type_2,
@@ -889,7 +889,7 @@ assign o_predec_iq_addr_3 = o_predec_iq_addr_2 + (o_predec_iq_len[2]   ? `CORE_P
 wire predec_bpu_pred_update = ((i_iq_bpu_vld & (i_iq_bpu_type == 1'b1) & (~i_iq_alias_err))
                             &  (i_iq_bpu_btb_addr[31 : 4] == i_bpu_predinfo_bus[`PREDINFO_ADDR])
                             &  (i_iq_bpu_btb_addr[3 : 0] >= i_bpu_predinfo_bus[`PREDINFO_OFFSET]));
-wire [`PREDINFO_WIDTH - 1 : 0] predec_updated_predinfo;
+wire [`BPU_PRED_INFO_WIDTH - 1 : 0] predec_updated_predinfo;
 assign predec_updated_predinfo = {
                                     i_iq_bpu_new_br 
                                 ,   i_iq_bpu_taken 
@@ -903,8 +903,8 @@ assign predec_updated_predinfo = {
                                };
 
 
-assign o_predec_iq_predinfo_bus = ({`PREDINFO_WIDTH{predec_bpu_pred_update   }} & predec_updated_predinfo)
-                                | ({`PREDINFO_WIDTH{(~predec_bpu_pred_update)}} & i_bpu_predinfo_bus     );
+assign o_predec_iq_predinfo_bus = ({`BPU_PRED_INFO_WIDTH{predec_bpu_pred_update   }} & predec_updated_predinfo)
+                                | ({`BPU_PRED_INFO_WIDTH{(~predec_bpu_pred_update)}} & i_bpu_predinfo_bus     );
 
 //
 assign o_predec_icache_16byte_done = (predec_buf_flag_r & predec_last_cycle);

@@ -18,4 +18,16 @@
                                 + `GHR_PHT_IDX_WIDTH    /*  gshare_pht_idx              */
                                 + 2                     /*  pht_entry                   */
                                 + 1)                    /*  gshare_taken                */
+
+`define BPU_INFO_GS_TAKEN       0
+`define BPU_INFO_PHT_ENTRY      2 : 1
+`define BPU_INFO_PHT_IDX        13 : 3
+`define BPU_INFO_BTB_IDX        18 : 14
+`define BPU_INFO_BTB_TADDR      50 : 19
+`define BPU_INFO_BTB_TYPE       51
+`define BPU_INFO_BTB_OFFSET     55 : 52
+`define BPU_INFO_BTB_ADDR       83 : 56
+`define BPU_INFO_BTB_TAKEN      84
+`define BPU_INFO_HIT            85
+
 `endif  /*  !__INCLUDE_BPU_DEFS_V__!    */

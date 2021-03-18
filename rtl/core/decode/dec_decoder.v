@@ -2,21 +2,21 @@
 `ifdef __DECODE_DEC_DECODER_V__
 
 module dec_decoder_module (
-    input                   [`INSTR_WIDTH - 1           : 0]            i_dec_instr,
+    input                   [`INSTR_WIDTH - 1     : 0]              i_dec_instr,
     
-    output                                                              o_dec_ilgl,
-    output                  [`UOP_INFO_BUS_WIDTH - 1    : 0]            o_dec_info_bus,
-    output                                                              o_dec_rs1_vld,
-    output                  [`RS_CODE_WIDTH - 1         : 0]            o_dec_rs1_code,
-    output                                                              o_dec_rs2_vld,
-    output                  [`RS_CODE_WIDTH - 1         : 0]            o_dec_rs2_code,
-    output                                                              o_dec_rs3_vld,
-    output                  [`RS_CODE_WIDTH - 1         : 0]            o_dec_rs3_code,
-    output                                                              o_dec_rd_vld,
-    output                  [`RS_CODE_WIDTH - 1         : 0]            o_dec_rd_code,
-    output                                                              o_dec_imm_vld,
-    output                  [`IMM_WIDTH - 1             : 0]            o_dec_imm,
-    output                                                              o_dec_len
+    output                                                          o_dec_ilgl,
+    output                  [`DECINFO_WIDTH - 1   : 0]              o_dec_info_bus,
+    output                                                          o_dec_rs1_vld,
+    output                  [`ARF_CODE_WIDTH - 1  : 0]              o_dec_rs1_code,
+    output                                                          o_dec_rs2_vld,
+    output                  [`ARF_CODE_WIDTH - 1  : 0]              o_dec_rs2_code,
+    output                                                          o_dec_rs3_vld,
+    output                  [`ARF_CODE_WIDTH - 1  : 0]              o_dec_rs3_code,
+    output                                                          o_dec_rd_vld,
+    output                  [`ARF_CODE_WIDTH - 1  : 0]              o_dec_rd_code,
+    output                                                          o_dec_imm_vld,
+    output                  [`IMM_WIDTH - 1       : 0]              o_dec_imm,
+    output                                                          o_dec_len
 );
 
 wire [15 : 0] rv16_instr = i_dec_instr[15 : 0];
@@ -34,19 +34,19 @@ wire [4 : 0] rv32_rs3_code   =   rv32_instr[31 : 27];
 wire [2 : 0] rv32_func3 =   rv32_instr[14 : 12];
 wire [6 : 0] rv32_func7 =   rv32_instr[31 : 25];
 
-wire [`RS_CODE_WIDTH - 1 : 0] rv32_rd   = rv32_instr[11 : 7];
-wire [`RS_CODE_WIDTH - 1 : 0] rv32_rs1  = rv32_instr[19 : 15];
-wire [`RS_CODE_WIDTH - 1 : 0] rv32_rs2  = rv32_instr[24 : 20];
-wire [`RS_CODE_WIDTH - 1 : 0] rv32_rs3  = rv32_instr[31 : 27];
+wire [`ARF_CODE_WIDTH - 1 : 0] rv32_rd   = rv32_instr[11 : 7];
+wire [`ARF_CODE_WIDTH - 1 : 0] rv32_rs1  = rv32_instr[19 : 15];
+wire [`ARF_CODE_WIDTH - 1 : 0] rv32_rs2  = rv32_instr[24 : 20];
+wire [`ARF_CODE_WIDTH - 1 : 0] rv32_rs3  = rv32_instr[31 : 27];
 
-wire rv32_rs1_x0    = (rv32_rs1_code == `RS_CODE_WIDTH'b00000);
-wire rv32_rs1_x31   = (rv32_rs1_code == `RS_CODE_WIDTH'b11111);
-wire rv32_rs2_x0    = (rv32_rs2_code == `RS_CODE_WIDTH'b00000);
-wire rv32_rs2_x1    = (rv32_rs2_code == `RS_CODE_WIDTH'b00001);
-wire rv32_rs2_x31   = (rv32_rs2_code == `RS_CODE_WIDTH'b11111);
-wire rv32_rd_x0     = (rv32_rd_code  == `RS_CODE_WIDTH'b00000);
-wire rv32_rd_x2     = (rv32_rd_code  == `RS_CODE_WIDTH'b00010);
-wire rv32_rd_x31    = (rv32_rd_code  == `RS_CODE_WIDTH'b11111);
+wire rv32_rs1_x0    = (rv32_rs1_code == `ARF_CODE_WIDTH'b00000);
+wire rv32_rs1_x31   = (rv32_rs1_code == `ARF_CODE_WIDTH'b11111);
+wire rv32_rs2_x0    = (rv32_rs2_code == `ARF_CODE_WIDTH'b00000);
+wire rv32_rs2_x1    = (rv32_rs2_code == `ARF_CODE_WIDTH'b00001);
+wire rv32_rs2_x31   = (rv32_rs2_code == `ARF_CODE_WIDTH'b11111);
+wire rv32_rd_x0     = (rv32_rd_code  == `ARF_CODE_WIDTH'b00000);
+wire rv32_rd_x2     = (rv32_rd_code  == `ARF_CODE_WIDTH'b00010);
+wire rv32_rd_x31    = (rv32_rd_code  == `ARF_CODE_WIDTH'b11111);
 
 wire opcode_1_0_00  =   (opcode[1 : 0] == 2'b00);
 wire opcode_1_0_01  =   (opcode[1 : 0] == 2'b01);
@@ -313,13 +313,13 @@ wire rv32_all0s1s_ilgl = rv32_all0s_ilgl | rv32_all1s_ilgl;
 wire rv32_ilgl  = rv32_shamt_ilgl;
 
 //  RV16
-wire [`RS_CODE_WIDTH - 1 : 0] rv16_rd   = rv32_rd;
-wire [`RS_CODE_WIDTH - 1 : 0] rv16_rs1  = rv16_rd;
-wire [`RS_CODE_WIDTH - 1 : 0] rv16_rs2  = rv32_instr[6 : 2];
+wire [`ARF_CODE_WIDTH - 1 : 0] rv16_rd   = rv32_rd;
+wire [`ARF_CODE_WIDTH - 1 : 0] rv16_rs1  = rv16_rd;
+wire [`ARF_CODE_WIDTH - 1 : 0] rv16_rs2  = rv32_instr[6 : 2];
 
-wire [`RS_CODE_WIDTH - 1 : 0] rv16_rdd  = {2'b01, rv32_instr[4 : 2]};
-wire [`RS_CODE_WIDTH - 1 : 0] rv16_rss1 = {2'b01, rv32_instr[9 : 7]};
-wire [`RS_CODE_WIDTH - 1 : 0] rv16_rss2 = rv16_rdd;
+wire [`ARF_CODE_WIDTH - 1 : 0] rv16_rdd  = {2'b01, rv32_instr[4 : 2]};
+wire [`ARF_CODE_WIDTH - 1 : 0] rv16_rss1 = {2'b01, rv32_instr[9 : 7]};
+wire [`ARF_CODE_WIDTH - 1 : 0] rv16_rss2 = rv16_rdd;
 
 wire [2 : 0] rv16_func3 = rv32_instr[15 : 13];
 
@@ -574,68 +574,68 @@ wire rv16_format_cj     = rv16_j | rv16_jal;
 wire rv16_need_cr_rs1   = rv16_format_cr & 1'b1;
 wire rv16_need_cr_rs2   = rv16_format_cr & 1'b1;
 wire rv16_need_cr_rd    = rv16_format_cr & 1'b1;
-wire [`RS_CODE_WIDTH - 1 : 0] rv16_cr_rs1   = rv16_mv   ?   `RS_CODE_WIDTH'd0 : rv16_rs1;
-wire [`RS_CODE_WIDTH - 1 : 0] rv16_cr_rs2   = rv16_rs2;
-wire [`RS_CODE_WIDTH - 1 : 0] rv16_cr_rd    = (rv16_jalr | rv16_jr) ? {{`RS_CODE_WIDTH{1'b0}}, rv16_instr[12]}
+wire [`ARF_CODE_WIDTH - 1 : 0] rv16_cr_rs1   = rv16_mv   ?   `ARF_CODE_WIDTH'd0 : rv16_rs1;
+wire [`ARF_CODE_WIDTH - 1 : 0] rv16_cr_rs2   = rv16_rs2;
+wire [`ARF_CODE_WIDTH - 1 : 0] rv16_cr_rd    = (rv16_jalr | rv16_jr) ? {{`ARF_CODE_WIDTH{1'b0}}, rv16_instr[12]}
                                             : rv16_rd;
 
 //  CI Format
 wire rv16_need_ci_rs1   = rv16_format_ci & 1'b1;
 wire rv16_need_ci_rs2   = rv16_format_ci & 1'b0;
 wire rv16_need_ci_rd    = rv16_format_ci & 1'b1;
-wire [`RS_CODE_WIDTH - 1 : 0] rv16_ci_rs1   = (rv16_lwsp | rv16_flwsp | rv16_fldsp) ? `RS_CODE_WIDTH'd2
-                                            : (rv16_lui | rv16_li) ? `RS_CODE_WIDTH'd0
+wire [`ARF_CODE_WIDTH - 1 : 0] rv16_ci_rs1   = (rv16_lwsp | rv16_flwsp | rv16_fldsp) ? `ARF_CODE_WIDTH'd2
+                                            : (rv16_lui | rv16_li) ? `ARF_CODE_WIDTH'd0
                                             : rv16_rs1;
-wire [`RS_CODE_WIDTH - 1 : 0] rv16_ci_rs2   = `RS_CODE_WIDTH'd0;
-wire [`RS_CODE_WIDTH - 1 : 0] rv16_ci_rd    = rv16_rd;
+wire [`ARF_CODE_WIDTH - 1 : 0] rv16_ci_rs2   = `ARF_CODE_WIDTH'd0;
+wire [`ARF_CODE_WIDTH - 1 : 0] rv16_ci_rd    = rv16_rd;
 
 //  CSS Format
 wire rv16_need_css_rs1  = rv16_format_css & 1'b1;
 wire rv16_need_css_rs2  = rv16_format_css & 1'b1;
 wire rv16_need_css_rd   = rv16_format_css & 1'b0;
-wire [`RS_CODE_WIDTH - 1 : 0] rv16_css_rs1  = `RS_CODE_WIDTH'd2;
-wire [`RS_CODE_WIDTH - 1 : 0] rv16_css_rs2  = rv16_rs2;
-wire [`RS_CODE_WIDTH - 1 : 0] rv16_css_rd   = `RS_CODE_WIDTH'd0;
+wire [`ARF_CODE_WIDTH - 1 : 0] rv16_css_rs1  = `ARF_CODE_WIDTH'd2;
+wire [`ARF_CODE_WIDTH - 1 : 0] rv16_css_rs2  = rv16_rs2;
+wire [`ARF_CODE_WIDTH - 1 : 0] rv16_css_rd   = `ARF_CODE_WIDTH'd0;
 
 //  CIW Format
 wire rv16_need_ciw_rss1 = rv16_format_ciw & 1'b1;
 wire rv16_need_ciw_rss2 = rv16_format_ciw & 1'b0;
 wire rv16_need_ciw_rdd  = rv16_format_ciw & 1'b1;
-wire [`RS_CODE_WIDTH - 1 : 0] rv16_ciw_rss1 = `RS_CODE_WIDTH'd2;
-wire [`RS_CODE_WIDTH - 1 : 0] rv16_ciw_rss2 = `RS_CODE_WIDTH'd0;
-wire [`RS_CODE_WIDTH - 1 : 0] rv16_ciw_rdd  = rv16_rdd;
+wire [`ARF_CODE_WIDTH - 1 : 0] rv16_ciw_rss1 = `ARF_CODE_WIDTH'd2;
+wire [`ARF_CODE_WIDTH - 1 : 0] rv16_ciw_rss2 = `ARF_CODE_WIDTH'd0;
+wire [`ARF_CODE_WIDTH - 1 : 0] rv16_ciw_rdd  = rv16_rdd;
 
 //  CL Format
 wire rv16_need_cl_rss1  = rv16_format_cl & 1'b1;
 wire rv16_need_cl_rss2  = rv16_format_cl & 1'b0;
 wire rv16_need_cl_rdd   = rv16_format_cl & 1'b1;
-wire [`RS_CODE_WIDTH - 1 : 0] rv16_cl_rss1  = rv16_rss1;
-wire [`RS_CODE_WIDTH - 1 : 0] rv16_cl_rss2  = `RS_CODE_WIDTH'd0;
-wire [`RS_CODE_WIDTH - 1 : 0] rv16_cl_rdd   = rv16_rdd;
+wire [`ARF_CODE_WIDTH - 1 : 0] rv16_cl_rss1  = rv16_rss1;
+wire [`ARF_CODE_WIDTH - 1 : 0] rv16_cl_rss2  = `ARF_CODE_WIDTH'd0;
+wire [`ARF_CODE_WIDTH - 1 : 0] rv16_cl_rdd   = rv16_rdd;
 
 //  CS Format
 wire rv16_need_cs_rss1  = rv16_format_cs & 1'b1;
 wire rv16_need_cs_rss2  = rv16_format_cs & 1'b1;
 wire rv16_need_cs_rdd   = rv16_format_cs & rv16_subxororand;
-wire [`RS_CODE_WIDTH - 1 : 0] rv16_cs_rss1 = rv16_rss1;
-wire [`RS_CODE_WIDTH - 1 : 0] rv16_cs_rss2 = rv16_rss2;
-wire [`RS_CODE_WIDTH - 1 : 0] rv16_cs_rdd  = rv16_rss1;
+wire [`ARF_CODE_WIDTH - 1 : 0] rv16_cs_rss1 = rv16_rss1;
+wire [`ARF_CODE_WIDTH - 1 : 0] rv16_cs_rss2 = rv16_rss2;
+wire [`ARF_CODE_WIDTH - 1 : 0] rv16_cs_rdd  = rv16_rss1;
 
 //  CB Format
 wire rv16_need_cb_rss1  = rv16_format_cb & 1'b1;
 wire rv16_need_cb_rss2  = rv16_format_cb & (rv16_beqz | rv16_bnez);
 wire rv16_need_cb_rdd   = rv16_format_cb & (~(rv16_beqz | rv16_bnez));
-wire [`RS_CODE_WIDTH - 1 : 0] rv16_cb_rss1  = rv16_rss1;
-wire [`RS_CODE_WIDTH - 1 : 0] rv16_cb_rss2  = `RS_CODE_WIDTH'd0;
-wire [`RS_CODE_WIDTH - 1 : 0] rv16_cb_rdd   = rv16_rss1;
+wire [`ARF_CODE_WIDTH - 1 : 0] rv16_cb_rss1  = rv16_rss1;
+wire [`ARF_CODE_WIDTH - 1 : 0] rv16_cb_rss2  = `ARF_CODE_WIDTH'd0;
+wire [`ARF_CODE_WIDTH - 1 : 0] rv16_cb_rdd   = rv16_rss1;
 
 //  CJ Format
 wire rv16_need_cj_rss1  = rv16_format_cj & 1'b0;
 wire rv16_need_cj_rss2  = rv16_format_cj & 1'b0;
 wire rv16_need_cj_rdd   = rv16_format_cj & 1'b1;
-wire [`RS_CODE_WIDTH - 1 : 0] rv16_cj_rss1 = `RS_CODE_WIDTH'd0;
-wire [`RS_CODE_WIDTH - 1 : 0] rv16_cj_rss2 = `RS_CODE_WIDTH'd0;
-wire [`RS_CODE_WIDTH - 1 : 0] rv16_cj_rdd  = rv16_j ? `RS_CODE_WIDTH'd0 : `RS_CODE_WIDTH'd1;
+wire [`ARF_CODE_WIDTH - 1 : 0] rv16_cj_rss1 = `ARF_CODE_WIDTH'd0;
+wire [`ARF_CODE_WIDTH - 1 : 0] rv16_cj_rss2 = `ARF_CODE_WIDTH'd0;
+wire [`ARF_CODE_WIDTH - 1 : 0] rv16_cj_rdd  = rv16_j ? `ARF_CODE_WIDTH'd0 : `ARF_CODE_WIDTH'd1;
 
 //
 wire rv16_need_rs1  = rv16_need_cr_rs1 | rv16_need_ci_rs1 | rv16_need_css_rs1;
@@ -651,32 +651,32 @@ wire rv16_rs2_valid = rv16_need_rs2 | rv16_need_rss2;
 wire rv16_rs3_valid = 1'b0;
 wire rv16_rd_valid  = rv16_need_rd  | rv16_need_rdd;
 
-wire [`RS_CODE_WIDTH - 1 : 0] rv16_rs1_code = ({`RS_CODE_WIDTH{rv16_need_cr_rs1  }}      & rv16_cr_rs1   )
-                                            | ({`RS_CODE_WIDTH{rv16_need_ci_rs1  }}      & rv16_ci_rs1   )
-                                            | ({`RS_CODE_WIDTH{rv16_need_css_rs1 }}      & rv16_css_rs1  )
-                                            | ({`RS_CODE_WIDTH{rv16_need_ciw_rss1}}      & rv16_ciw_rss1 )
-                                            | ({`RS_CODE_WIDTH{rv16_need_cl_rss1 }}      & rv16_cl_rss1  )
-                                            | ({`RS_CODE_WIDTH{rv16_need_cs_rss1 }}      & rv16_cl_rss1  )
-                                            | ({`RS_CODE_WIDTH{rv16_need_cb_rss1 }}      & rv16_cb_rss1  )
-                                            | ({`RS_CODE_WIDTH{rv16_need_cj_rss1 }}      & rv16_cj_rss1  );
+wire [`ARF_CODE_WIDTH - 1 : 0] rv16_rs1_code = ({`ARF_CODE_WIDTH{rv16_need_cr_rs1  }}      & rv16_cr_rs1   )
+                                            | ({`ARF_CODE_WIDTH{rv16_need_ci_rs1  }}      & rv16_ci_rs1   )
+                                            | ({`ARF_CODE_WIDTH{rv16_need_css_rs1 }}      & rv16_css_rs1  )
+                                            | ({`ARF_CODE_WIDTH{rv16_need_ciw_rss1}}      & rv16_ciw_rss1 )
+                                            | ({`ARF_CODE_WIDTH{rv16_need_cl_rss1 }}      & rv16_cl_rss1  )
+                                            | ({`ARF_CODE_WIDTH{rv16_need_cs_rss1 }}      & rv16_cl_rss1  )
+                                            | ({`ARF_CODE_WIDTH{rv16_need_cb_rss1 }}      & rv16_cb_rss1  )
+                                            | ({`ARF_CODE_WIDTH{rv16_need_cj_rss1 }}      & rv16_cj_rss1  );
 
-wire [`RS_CODE_WIDTH - 1 : 0] rv16_rs2_code = ({`RS_CODE_WIDTH{rv16_need_cr_rs2  }}      & rv16_cr_rs2   )
-                                            | ({`RS_CODE_WIDTH{rv16_need_ci_rs2  }}      & rv16_ci_rs2   )
-                                            | ({`RS_CODE_WIDTH{rv16_need_css_rs2 }}      & rv16_css_rs2  )
-                                            | ({`RS_CODE_WIDTH{rv16_need_ciw_rss2}}      & rv16_ciw_rss2 )
-                                            | ({`RS_CODE_WIDTH{rv16_need_cl_rss2 }}      & rv16_cl_rss2  )
-                                            | ({`RS_CODE_WIDTH{rv16_need_cs_rss2 }}      & rv16_cl_rss2  )
-                                            | ({`RS_CODE_WIDTH{rv16_need_cb_rss2 }}      & rv16_cb_rss2  )
-                                            | ({`RS_CODE_WIDTH{rv16_need_cj_rss2 }}      & rv16_cj_rss2  );
-wire [`RS_CODE_WIDTH - 1 : 0] rv16_rs3_code = `RS_CODE_WIDTH'd0;
-wire [`RS_CODE_WIDTH - 1 : 0] rv16_rd_code  = ({`RS_CODE_WIDTH{rv16_need_cr_rd  }}      & rv16_cr_rd   )
-                                            | ({`RS_CODE_WIDTH{rv16_need_ci_rd  }}      & rv16_ci_rd   )
-                                            | ({`RS_CODE_WIDTH{rv16_need_css_rd }}      & rv16_css_rd  )
-                                            | ({`RS_CODE_WIDTH{rv16_need_ciw_rdd}}      & rv16_ciw_rdd )
-                                            | ({`RS_CODE_WIDTH{rv16_need_cl_rdd }}      & rv16_cl_rdd  )
-                                            | ({`RS_CODE_WIDTH{rv16_need_cs_rdd }}      & rv16_cl_rdd  )
-                                            | ({`RS_CODE_WIDTH{rv16_need_cb_rdd }}      & rv16_cb_rdd  )
-                                            | ({`RS_CODE_WIDTH{rv16_need_cj_rdd }}      & rv16_cj_rdd  );
+wire [`ARF_CODE_WIDTH - 1 : 0] rv16_rs2_code = ({`ARF_CODE_WIDTH{rv16_need_cr_rs2  }}      & rv16_cr_rs2   )
+                                            | ({`ARF_CODE_WIDTH{rv16_need_ci_rs2  }}      & rv16_ci_rs2   )
+                                            | ({`ARF_CODE_WIDTH{rv16_need_css_rs2 }}      & rv16_css_rs2  )
+                                            | ({`ARF_CODE_WIDTH{rv16_need_ciw_rss2}}      & rv16_ciw_rss2 )
+                                            | ({`ARF_CODE_WIDTH{rv16_need_cl_rss2 }}      & rv16_cl_rss2  )
+                                            | ({`ARF_CODE_WIDTH{rv16_need_cs_rss2 }}      & rv16_cl_rss2  )
+                                            | ({`ARF_CODE_WIDTH{rv16_need_cb_rss2 }}      & rv16_cb_rss2  )
+                                            | ({`ARF_CODE_WIDTH{rv16_need_cj_rss2 }}      & rv16_cj_rss2  );
+wire [`ARF_CODE_WIDTH - 1 : 0] rv16_rs3_code = `ARF_CODE_WIDTH'd0;
+wire [`ARF_CODE_WIDTH - 1 : 0] rv16_rd_code  = ({`ARF_CODE_WIDTH{rv16_need_cr_rd  }}      & rv16_cr_rd   )
+                                            | ({`ARF_CODE_WIDTH{rv16_need_ci_rd  }}      & rv16_ci_rd   )
+                                            | ({`ARF_CODE_WIDTH{rv16_need_css_rd }}      & rv16_css_rd  )
+                                            | ({`ARF_CODE_WIDTH{rv16_need_ciw_rdd}}      & rv16_ciw_rdd )
+                                            | ({`ARF_CODE_WIDTH{rv16_need_cl_rdd }}      & rv16_cl_rdd  )
+                                            | ({`ARF_CODE_WIDTH{rv16_need_cs_rdd }}      & rv16_cl_rdd  )
+                                            | ({`ARF_CODE_WIDTH{rv16_need_cb_rdd }}      & rv16_cb_rdd  )
+                                            | ({`ARF_CODE_WIDTH{rv16_need_cj_rdd }}      & rv16_cj_rdd  );
 
 //
 wire rv16_all0s_ilgl    = rv16_func3_000
@@ -719,127 +719,127 @@ wire rv32           = (~(i_dec_instr[4 : 2] == 3'b111)) & opcode_1_0_11;
 
 //  Decoder info bus
 //  BJP INFO BUS
-wire [`UOP_INFO_BUS_WIDTH - 1 : 0] bjp_info_bus;
-assign bjp_info_bus[`UOPINFO_EXEC_UNIT      ]   = `UOPINFO_BJP;
-assign bjp_info_bus[`UOPINFO_BJP_JUMP       ]   = rv32_jal | rv32_jalr | rv16_jalr | rv16_jr | rv16_jal | rv16_j;
-assign bjp_info_bus[`UOPINFO_BJP_BEQ        ]   = rv32_beq | rv16_beqz;
-assign bjp_info_bus[`UOPINFO_BJP_BNE        ]   = rv32_bne | rv16_bnez;
-assign bjp_info_bus[`UOPINFO_BJP_BLT        ]   = rv32_blt;
-assign bjp_info_bus[`UOPINFO_BJP_BLTU       ]   = rv32_bltu;
-assign bjp_info_bus[`UOPINFO_BJP_BGE        ]   = rv32_bge;
-assign bjp_info_bus[`UOPINFO_BJP_BGEU       ]   = rv32_bgeu;
-assign bjp_info_bus[`UOPINFO_BJP_MRET       ]   = rv32_mret;
-assign bjp_info_bus[`UOPINFO_BJP_SRET       ]   = rv32_sret;
-assign bjp_info_bus[`UOPINFO_BJP_URET       ]   = rv32_uret;
+wire [`DECINFO_WIDTH - 1 : 0] bjp_info_bus;
+assign bjp_info_bus[`DECINFO_EXEC_UNIT      ]   = `DECINFO_BJP;
+assign bjp_info_bus[`DECINFO_BJP_JUMP       ]   = rv32_jal | rv32_jalr | rv16_jalr | rv16_jr | rv16_jal | rv16_j;
+assign bjp_info_bus[`DECINFO_BJP_BEQ        ]   = rv32_beq | rv16_beqz;
+assign bjp_info_bus[`DECINFO_BJP_BNE        ]   = rv32_bne | rv16_bnez;
+assign bjp_info_bus[`DECINFO_BJP_BLT        ]   = rv32_blt;
+assign bjp_info_bus[`DECINFO_BJP_BLTU       ]   = rv32_bltu;
+assign bjp_info_bus[`DECINFO_BJP_BGE        ]   = rv32_bge;
+assign bjp_info_bus[`DECINFO_BJP_BGEU       ]   = rv32_bgeu;
+assign bjp_info_bus[`DECINFO_BJP_MRET       ]   = rv32_mret;
+assign bjp_info_bus[`DECINFO_BJP_SRET       ]   = rv32_sret;
+assign bjp_info_bus[`DECINFO_BJP_URET       ]   = rv32_uret;
 
 //  ALU INFO BUS
-wire [`UOP_INFO_BUS_WIDTH - 1 : 0] alu_info_bus;
-assign alu_info_bus[`UOPINFO_EXEC_UNIT      ]   = `UOPINFO_ALU;
-assign alu_info_bus[`UOPINFO_ALU_ADD        ]   = rv32_add | rv32_addi | rv32_auipc |
+wire [`DECINFO_WIDTH - 1 : 0] alu_info_bus;
+assign alu_info_bus[`DECINFO_EXEC_UNIT      ]   = `DECINFO_ALU;
+assign alu_info_bus[`DECINFO_ALU_ADD        ]   = rv32_add | rv32_addi | rv32_auipc |
                                                   rv16_addi4spn | rv16_addi | rv16_addi16sp | rv16_add |
                                                   rv16_li  | rv16_mv;
-assign alu_info_bus[`UOPINFO_ALU_SUB        ]   = rv32_sub | rv16_sub;
-assign alu_info_bus[`UOPINFO_ALU_SLT        ]   = rv32_slt | rv32_slti;
-assign alu_info_bus[`UOPINFO_ALU_SLTU       ]   = rv32_sltu| rv32_sltiu;
-assign alu_info_bus[`UOPINFO_ALU_XOR        ]   = rv32_xor | rv32_xori | rv16_xor;
-assign alu_info_bus[`UOPINFO_ALU_SLL        ]   = rv32_sll | rv32_slli | rv16_slli;
-assign alu_info_bus[`UOPINFO_ALU_SRL        ]   = rv32_srl | rv32_srli | rv16_srli;
-assign alu_info_bus[`UOPINFO_ALU_SRA        ]   = rv32_sra | rv32_srai | rv16_srai;
-assign alu_info_bus[`UOPINFO_ALU_OR         ]   = rv32_or  | rv32_ori  | rv16_or;
-assign alu_info_bus[`UOPINFO_ALU_AND        ]   = rv32_and | rv32_andi | rv16_and | rv16_andi;
-assign alu_info_bus[`UOPINFO_ALU_LUI        ]   = rv32_lui | rv16_lui;
-assign alu_info_bus[`UOPINFO_ALU_OPIMM      ]   = o_dec_imm_vld;
-assign alu_info_bus[`UOPINFO_ALU_NOP        ]   = rv32_nop | rv16_nop;
-assign alu_info_bus[`UOPINFO_ALU_FENCE      ]   = rv32_fence;
-assign alu_info_bus[`UOPINFO_ALU_FENCE_I    ]   = rv32_fencei;
-assign alu_info_bus[`UOPINFO_ALU_SFENCEVMA  ]   = rv32_sfence_vma;
-assign alu_info_bus[`UOPINFO_ALU_ECALL      ]   = rv32_ecall;
-assign alu_info_bus[`UOPINFO_ALU_EBRK       ]   = rv32_ebreak | rv16_ebreak;
-assign alu_info_bus[`UOPINFO_ALU_WFI        ]   = rv32_wfi;
+assign alu_info_bus[`DECINFO_ALU_SUB        ]   = rv32_sub | rv16_sub;
+assign alu_info_bus[`DECINFO_ALU_SLT        ]   = rv32_slt | rv32_slti;
+assign alu_info_bus[`DECINFO_ALU_SLTU       ]   = rv32_sltu| rv32_sltiu;
+assign alu_info_bus[`DECINFO_ALU_XOR        ]   = rv32_xor | rv32_xori | rv16_xor;
+assign alu_info_bus[`DECINFO_ALU_SLL        ]   = rv32_sll | rv32_slli | rv16_slli;
+assign alu_info_bus[`DECINFO_ALU_SRL        ]   = rv32_srl | rv32_srli | rv16_srli;
+assign alu_info_bus[`DECINFO_ALU_SRA        ]   = rv32_sra | rv32_srai | rv16_srai;
+assign alu_info_bus[`DECINFO_ALU_OR         ]   = rv32_or  | rv32_ori  | rv16_or;
+assign alu_info_bus[`DECINFO_ALU_AND        ]   = rv32_and | rv32_andi | rv16_and | rv16_andi;
+assign alu_info_bus[`DECINFO_ALU_LUI        ]   = rv32_lui | rv16_lui;
+assign alu_info_bus[`DECINFO_ALU_OPIMM      ]   = o_dec_imm_vld;
+assign alu_info_bus[`DECINFO_ALU_NOP        ]   = rv32_nop | rv16_nop;
+assign alu_info_bus[`DECINFO_ALU_FENCE      ]   = rv32_fence;
+assign alu_info_bus[`DECINFO_ALU_FENCE_I    ]   = rv32_fencei;
+assign alu_info_bus[`DECINFO_ALU_SFENCEVMA  ]   = rv32_sfence_vma;
+assign alu_info_bus[`DECINFO_ALU_ECALL      ]   = rv32_ecall;
+assign alu_info_bus[`DECINFO_ALU_EBRK       ]   = rv32_ebreak | rv16_ebreak;
+assign alu_info_bus[`DECINFO_ALU_WFI        ]   = rv32_wfi;
 
 //  MULDIV INFO BUS
-wire [`UOP_INFO_BUS_WIDTH - 1 : 0] muldiv_info_bus;
-assign muldiv_info_bus[`UOPINFO_EXEC_UNIT      ]   = `UOPINFO_MULDIV;
-assign muldiv_info_bus[`UOPINFO_MULDIV_MUL     ]   = rv32_mul;
-assign muldiv_info_bus[`UOPINFO_MULDIV_MULH    ]   = rv32_mulh;
-assign muldiv_info_bus[`UOPINFO_MULDIV_MULHU   ]   = rv32_mulhu;
-assign muldiv_info_bus[`UOPINFO_MULDIV_MULHSU  ]   = rv32_mulhsu;
-assign muldiv_info_bus[`UOPINFO_MULDIV_DIV     ]   = rv32_div;
-assign muldiv_info_bus[`UOPINFO_MULDIV_DIVU    ]   = rv32_divu;
-assign muldiv_info_bus[`UOPINFO_MULDIV_REM     ]   = rv32_rem;
-assign muldiv_info_bus[`UOPINFO_MULDIV_REMU    ]   = rv32_remu;
+wire [`DECINFO_WIDTH - 1 : 0] muldiv_info_bus;
+assign muldiv_info_bus[`DECINFO_EXEC_UNIT      ]   = `DECINFO_MULDIV;
+assign muldiv_info_bus[`DECINFO_MULDIV_MUL     ]   = rv32_mul;
+assign muldiv_info_bus[`DECINFO_MULDIV_MULH    ]   = rv32_mulh;
+assign muldiv_info_bus[`DECINFO_MULDIV_MULHU   ]   = rv32_mulhu;
+assign muldiv_info_bus[`DECINFO_MULDIV_MULHSU  ]   = rv32_mulhsu;
+assign muldiv_info_bus[`DECINFO_MULDIV_DIV     ]   = rv32_div;
+assign muldiv_info_bus[`DECINFO_MULDIV_DIVU    ]   = rv32_divu;
+assign muldiv_info_bus[`DECINFO_MULDIV_REM     ]   = rv32_rem;
+assign muldiv_info_bus[`DECINFO_MULDIV_REMU    ]   = rv32_remu;
 
 //  CSR INFO BUS
-wire [`UOP_INFO_BUS_WIDTH - 1 : 0] csr_info_bus;
-assign csr_info_bus[`UOPINFO_EXEC_UNIT      ]   = `UOPINFO_CSR;
-assign csr_info_bus[`UOPINFO_CSR_CSRRW      ]   = rv32_csrrw;
-assign csr_info_bus[`UOPINFO_CSR_CSRRS      ]   = rv32_csrrs;
-assign csr_info_bus[`UOPINFO_CSR_CSRRC      ]   = rv32_csrrc;
-assign csr_info_bus[`UOPINFO_CSR_CSRRWI     ]   = rv32_csrrwi;
-assign csr_info_bus[`UOPINFO_CSR_CSRRSI     ]   = rv32_csrrsi;
-assign csr_info_bus[`UOPINFO_CSR_CSRRCI     ]   = rv32_csrrci;
-assign csr_info_bus[`UOPINFO_CSR_ZIMM       ]   = rv32_rs1;
-assign csr_info_bus[`UOPINFO_CSR_RS1IS0     ]   = rv32_rs1_x0;
-assign csr_info_bus[`UOPINFO_CSR_RD1IS0     ]   = rv32_rd_x0;
-assign csr_info_bus[`UOPINFO_CSR_ADDR       ]   = rv32_instr[31 : 20];
+wire [`DECINFO_WIDTH - 1 : 0] csr_info_bus;
+assign csr_info_bus[`DECINFO_EXEC_UNIT      ]   = `DECINFO_CSR;
+assign csr_info_bus[`DECINFO_CSR_CSRRW      ]   = rv32_csrrw;
+assign csr_info_bus[`DECINFO_CSR_CSRRS      ]   = rv32_csrrs;
+assign csr_info_bus[`DECINFO_CSR_CSRRC      ]   = rv32_csrrc;
+assign csr_info_bus[`DECINFO_CSR_CSRRWI     ]   = rv32_csrrwi;
+assign csr_info_bus[`DECINFO_CSR_CSRRSI     ]   = rv32_csrrsi;
+assign csr_info_bus[`DECINFO_CSR_CSRRCI     ]   = rv32_csrrci;
+assign csr_info_bus[`DECINFO_CSR_ZIMM       ]   = rv32_rs1;
+assign csr_info_bus[`DECINFO_CSR_RS1IS0     ]   = rv32_rs1_x0;
+assign csr_info_bus[`DECINFO_CSR_RD1IS0     ]   = rv32_rd_x0;
+assign csr_info_bus[`DECINFO_CSR_ADDR       ]   = rv32_instr[31 : 20];
 
 //  AGU INFO BUS
 wire [1 : 0] agu_size   = rv32 ? rv32_func3[1 : 0] : 2'b10;
 wire agu_usign          = rv32 ? rv32_func3[2] : 1'b0;
 
-wire [`UOP_INFO_BUS_WIDTH - 1 : 0] agu_info_bus;
-assign agu_info_bus[`UOPINFO_EXEC_UNIT      ]   = `UOPINFO_AGU;
-assign agu_info_bus[`UOPINFO_AGU_LOAD       ]   = rv32_load     | rv32_lrw |
+wire [`DECINFO_WIDTH - 1 : 0] agu_info_bus;
+assign agu_info_bus[`DECINFO_EXEC_UNIT      ]   = `DECINFO_AGU;
+assign agu_info_bus[`DECINFO_AGU_LOAD       ]   = rv32_load     | rv32_lrw |
                                                   rv32_fpu_load | rv16_lw  |
                                                   rv16_lwsp     | rv16_flw |
                                                   rv16_fld      | rv16_fldsp |
                                                   rv16_flwsp;
-assign agu_info_bus[`UOPINFO_AGU_STORE      ]   = rv32_store     | rv32_scw |
+assign agu_info_bus[`DECINFO_AGU_STORE      ]   = rv32_store     | rv32_scw |
                                                   rv32_fpu_store | rv16_sw  |
                                                   rv16_swsp      | rv16_fsw |
                                                   rv16_fsd       | rv16_fsdsp |
                                                   rv16_fswsp;
-assign agu_info_bus[`UOPINFO_AGU_SIZE       ]   = agu_size;
-assign agu_info_bus[`UOPINFO_AGU_USIGN      ]   = agu_usign;
-assign agu_info_bus[`UOPINFO_AGU_EXCL       ]   = rv32_lrw | rv32_scw;
-assign agu_info_bus[`UOPINFO_AGU_AMOSWAPW   ]   = rv32_amoswapw;
-assign agu_info_bus[`UOPINFO_AGU_AMOADDW    ]   = rv32_amoaddw;
-assign agu_info_bus[`UOPINFO_AGU_AMOXORW    ]   = rv32_amoxorw;
-assign agu_info_bus[`UOPINFO_AGU_AMOANDW    ]   = rv32_amoandw;
-assign agu_info_bus[`UOPINFO_AGU_AMOORW     ]   = rv32_amoorw;
-assign agu_info_bus[`UOPINFO_AGU_AMOMINW    ]   = rv32_amominw;
-assign agu_info_bus[`UOPINFO_AGU_AMOMAXW    ]   = rv32_amomaxw;
-assign agu_info_bus[`UOPINFO_AGU_AMOMINUW   ]   = rv32_amominuw;
-assign agu_info_bus[`UOPINFO_AGU_AMOMAXUW   ]   = rv32_amomaxuw;
+assign agu_info_bus[`DECINFO_AGU_SIZE       ]   = agu_size;
+assign agu_info_bus[`DECINFO_AGU_USIGN      ]   = agu_usign;
+assign agu_info_bus[`DECINFO_AGU_EXCL       ]   = rv32_lrw | rv32_scw;
+assign agu_info_bus[`DECINFO_AGU_AMOSWAPW   ]   = rv32_amoswapw;
+assign agu_info_bus[`DECINFO_AGU_AMOADDW    ]   = rv32_amoaddw;
+assign agu_info_bus[`DECINFO_AGU_AMOXORW    ]   = rv32_amoxorw;
+assign agu_info_bus[`DECINFO_AGU_AMOANDW    ]   = rv32_amoandw;
+assign agu_info_bus[`DECINFO_AGU_AMOORW     ]   = rv32_amoorw;
+assign agu_info_bus[`DECINFO_AGU_AMOMINW    ]   = rv32_amominw;
+assign agu_info_bus[`DECINFO_AGU_AMOMAXW    ]   = rv32_amomaxw;
+assign agu_info_bus[`DECINFO_AGU_AMOMINUW   ]   = rv32_amominuw;
+assign agu_info_bus[`DECINFO_AGU_AMOMAXUW   ]   = rv32_amomaxuw;
 
 //  FPU INFO BUS
 wire [1 : 0] rv32_fpu_precsion = 2'b00; // singal
-wire [`UOP_INFO_BUS_WIDTH - 1 : 0] fpu_info_bus;
-assign fpu_info_bus[`UOPINFO_EXEC_UNIT      ]   = `UOPINFO_FPU;
-assign fpu_info_bus[`UOPINFO_FPU_PRECSION   ]   = rv32_fpu_precsion;
-assign fpu_info_bus[`UOPINFO_FPU_FMADDS     ]   = rv32_fpu_madds;
-assign fpu_info_bus[`UOPINFO_FPU_FMSUBS     ]   = rv32_fpu_msubs;
-assign fpu_info_bus[`UOPINFO_FPU_FNMSUBS    ]   = rv32_fpu_nmsubs;
-assign fpu_info_bus[`UOPINFO_FPU_FNMADDS    ]   = rv32_fpu_nmadds;
-assign fpu_info_bus[`UOPINFO_FPU_ADDS       ]   = rv32_fadds;
-assign fpu_info_bus[`UOPINFO_FPU_SUBS       ]   = rv32_fsubs;
-assign fpu_info_bus[`UOPINFO_FPU_MULS       ]   = rv32_fmuls;
-assign fpu_info_bus[`UOPINFO_FPU_DIVS       ]   = rv32_fdivs;
-assign fpu_info_bus[`UOPINFO_FPU_SQRTS      ]   = rv32_fsqrts;
-assign fpu_info_bus[`UOPINFO_FPU_SGNJS      ]   = rv32_fsgnjs;
-assign fpu_info_bus[`UOPINFO_FPU_SGNJNS     ]   = rv32_fsgnjxs;
-assign fpu_info_bus[`UOPINFO_FPU_MINS       ]   = rv32_fmins;
-assign fpu_info_bus[`UOPINFO_FPU_MAXS       ]   = rv32_fmaxs;
-assign fpu_info_bus[`UOPINFO_FPU_CVTWS      ]   = rv32_fcvtws;
-assign fpu_info_bus[`UOPINFO_FPU_CVTWUS     ]   = rv32_fcvtwus;
-assign fpu_info_bus[`UOPINFO_FPU_MVXW       ]   = rv32_fmvxw;
-assign fpu_info_bus[`UOPINFO_FPU_FEQS       ]   = rv32_feqs;
-assign fpu_info_bus[`UOPINFO_FPU_FLTS       ]   = rv32_flts;
-assign fpu_info_bus[`UOPINFO_FPU_FLES       ]   = rv32_fles;
-assign fpu_info_bus[`UOPINFO_FPU_CLASSS     ]   = rv32_fclasss;
-assign fpu_info_bus[`UOPINFO_FPU_CVTSW      ]   = rv32_fcvtsw;
-assign fpu_info_bus[`UOPINFO_FPU_CVTSWU     ]   = rv32_fcvtswu;
-assign fpu_info_bus[`UOPINFO_FPU_MVWX       ]   = rv32_fmvwx;
+wire [`DECINFO_WIDTH - 1 : 0] fpu_info_bus;
+assign fpu_info_bus[`DECINFO_EXEC_UNIT      ]   = `DECINFO_FPU;
+assign fpu_info_bus[`DECINFO_FPU_PRECSION   ]   = rv32_fpu_precsion;
+assign fpu_info_bus[`DECINFO_FPU_FMADDS     ]   = rv32_fpu_madds;
+assign fpu_info_bus[`DECINFO_FPU_FMSUBS     ]   = rv32_fpu_msubs;
+assign fpu_info_bus[`DECINFO_FPU_FNMSUBS    ]   = rv32_fpu_nmsubs;
+assign fpu_info_bus[`DECINFO_FPU_FNMADDS    ]   = rv32_fpu_nmadds;
+assign fpu_info_bus[`DECINFO_FPU_ADDS       ]   = rv32_fadds;
+assign fpu_info_bus[`DECINFO_FPU_SUBS       ]   = rv32_fsubs;
+assign fpu_info_bus[`DECINFO_FPU_MULS       ]   = rv32_fmuls;
+assign fpu_info_bus[`DECINFO_FPU_DIVS       ]   = rv32_fdivs;
+assign fpu_info_bus[`DECINFO_FPU_SQRTS      ]   = rv32_fsqrts;
+assign fpu_info_bus[`DECINFO_FPU_SGNJS      ]   = rv32_fsgnjs;
+assign fpu_info_bus[`DECINFO_FPU_SGNJNS     ]   = rv32_fsgnjxs;
+assign fpu_info_bus[`DECINFO_FPU_MINS       ]   = rv32_fmins;
+assign fpu_info_bus[`DECINFO_FPU_MAXS       ]   = rv32_fmaxs;
+assign fpu_info_bus[`DECINFO_FPU_CVTWS      ]   = rv32_fcvtws;
+assign fpu_info_bus[`DECINFO_FPU_CVTWUS     ]   = rv32_fcvtwus;
+assign fpu_info_bus[`DECINFO_FPU_MVXW       ]   = rv32_fmvxw;
+assign fpu_info_bus[`DECINFO_FPU_FEQS       ]   = rv32_feqs;
+assign fpu_info_bus[`DECINFO_FPU_FLTS       ]   = rv32_flts;
+assign fpu_info_bus[`DECINFO_FPU_FLES       ]   = rv32_fles;
+assign fpu_info_bus[`DECINFO_FPU_CLASSS     ]   = rv32_fclasss;
+assign fpu_info_bus[`DECINFO_FPU_CVTSW      ]   = rv32_fcvtsw;
+assign fpu_info_bus[`DECINFO_FPU_CVTSWU     ]   = rv32_fcvtswu;
+assign fpu_info_bus[`DECINFO_FPU_MVWX       ]   = rv32_fmvwx;
 
 
 
@@ -894,12 +894,12 @@ wire agu_op     = rv32_amo_op
                 | (rv16_ldsp & (~rv16_ldsp_ilgl))
                 | rv16_swsp | rv16_sdsp;
 
-wire [`UOP_INFO_BUS_WIDTH - 1 : 0] rv_info_bus = ({`UOP_INFO_BUS_WIDTH{bjp_op   }}      & bjp_info_bus   )
-                                               | ({`UOP_INFO_BUS_WIDTH{alu_op   }}      & alu_info_bus   )
-                                               | ({`UOP_INFO_BUS_WIDTH{csr_op   }}      & csr_info_bus   )
-                                               | ({`UOP_INFO_BUS_WIDTH{muldiv_op}}      & muldiv_info_bus)
-                                               | ({`UOP_INFO_BUS_WIDTH{fpu_op   }}      & fpu_info_bus   )
-                                               | ({`UOP_INFO_BUS_WIDTH{agu_op   }}      & agu_info_bus   );
+wire [`DECINFO_WIDTH - 1 : 0] rv_info_bus = ({`DECINFO_WIDTH{bjp_op   }}      & bjp_info_bus   )
+                                               | ({`DECINFO_WIDTH{alu_op   }}      & alu_info_bus   )
+                                               | ({`DECINFO_WIDTH{csr_op   }}      & csr_info_bus   )
+                                               | ({`DECINFO_WIDTH{muldiv_op}}      & muldiv_info_bus)
+                                               | ({`DECINFO_WIDTH{fpu_op   }}      & fpu_info_bus   )
+                                               | ({`DECINFO_WIDTH{agu_op   }}      & agu_info_bus   );
 wire legl_ops   = bjp_op | alu_op | csr_op | muldiv_op | fpu_op | agu_op;
 
 
