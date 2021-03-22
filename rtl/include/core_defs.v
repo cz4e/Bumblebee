@@ -7,6 +7,7 @@
 
 `define ARF_CODE_WIDTH          5           /*  Architecture register code space.   */
 `define PRF_CODE_WIDTH          7           /*  Physical register code space.       */
-
+`define PRF_DATA_WIDTH          32          /*  The width of prf.                   */
+`define PRF_NUMS                128         /*  The number of prf.                  */
 
 `endif  /*  !__INCLUDE_CORE_DEFS_V__!   */

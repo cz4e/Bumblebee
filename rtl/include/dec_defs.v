@@ -1,6 +1,7 @@
 `ifdef __INCLUDE_DEC_DEFS_V__
 
 `define DECINFO_WIDTH                       32
+`define EXEC_UNIT_WIDTH                     6
 `define DECINFO_EXEC_UNIT                   5 : 0
 `define DECINFO_BJP                         6'b000001
 `define DECINFO_ALU                         6'b000010

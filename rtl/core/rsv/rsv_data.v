@@ -12,33 +12,33 @@ module rsv_data_module (
     input   [`RSV_IDX_WIDTH - 1         : 0]        i_dsp_rsv_free_entry_3,
     input   [`ROB_ID_WIDTH  - 1         : 0]        i_dsp_rsv_rob_id_0,
     input                                           i_dsp_rsv_ld_vld_0,
-    input   [`LOAD_BUFFER_ID_WIDTH - 1  : 0]        i_dsp_rsv_ld_id_0,
+    input   [`LBUFF_ID_WIDTH - 1        : 0]        i_dsp_rsv_ld_id_0,
     input                                           i_dsp_rsv_st_vld_0,
-    input   [`STORE_BUFFER_ID_WIDTH - 1 : 0]        i_dsp_rsv_st_id_0,
+    input   [`SBUFF_ID_WIDTH - 1        : 0]        i_dsp_rsv_st_id_0,
     input   [`DECINFO_WIDTH - 1         : 0]        i_dsp_rsv_decinfo_bus_0,
     input   [`PREDINFO_WIDTH - 1        : 0]        i_dsp_rsv_predinfo_bus_0,
     input   [`IMM_WIDTH - 1             : 0]        i_dsp_rsv_imm_0,
     input   [`ROB_ID_WIDTH  - 1         : 0]        i_dsp_rsv_rob_id_1,
     input                                           i_dsp_rsv_ld_vld_1,
-    input   [`LOAD_BUFFER_ID_WIDTH - 1  : 0]        i_dsp_rsv_ld_id_1,
+    input   [`LBUFF_ID_WIDTH - 1        : 0]        i_dsp_rsv_ld_id_1,
     input                                           i_dsp_rsv_st_vld_1,
-    input   [`STORE_BUFFER_ID_WIDTH - 1 : 0]        i_dsp_rsv_st_id_1,
+    input   [`SBUFF_ID_WIDTH - 1        : 0]        i_dsp_rsv_st_id_1,
     input   [`DECINFO_WIDTH - 1         : 0]        i_dsp_rsv_decinfo_bus_1,
     input   [`PREDINFO_WIDTH - 1        : 0]        i_dsp_rsv_predinfo_bus_1,
     input   [`IMM_WIDTH - 1             : 0]        i_dsp_rsv_imm_1,
     input   [`ROB_ID_WIDTH  - 1         : 0]        i_dsp_rsv_rob_id_2,
     input                                           i_dsp_rsv_ld_vld_2,
-    input   [`LOAD_BUFFER_ID_WIDTH - 1  : 0]        i_dsp_rsv_ld_id_2,
+    input   [`LBUFF_ID_WIDTH - 1        : 0]        i_dsp_rsv_ld_id_2,
     input                                           i_dsp_rsv_st_vld_2,
-    input   [`STORE_BUFFER_ID_WIDTH - 1 : 0]        i_dsp_rsv_st_id_2,
+    input   [`SBUFF_ID_WIDTH - 1        : 0]        i_dsp_rsv_st_id_2,
     input   [`DECINFO_WIDTH - 1         : 0]        i_dsp_rsv_decinfo_bus_2,
     input   [`PREDINFO_WIDTH - 1        : 0]        i_dsp_rsv_predinfo_bus_2,
     input   [`IMM_WIDTH - 1             : 0]        i_dsp_rsv_imm_2,
     input   [`ROB_ID_WIDTH  - 1         : 0]        i_dsp_rsv_rob_id_3,
     input                                           i_dsp_rsv_ld_vld_3,
-    input   [`LOAD_BUFFER_ID_WIDTH - 1  : 0]        i_dsp_rsv_ld_id_3,
+    input   [`LBUFF_ID_WIDTH - 1        : 0]        i_dsp_rsv_ld_id_3,
     input                                           i_dsp_rsv_st_vld_3,
-    input   [`STORE_BUFFER_ID_WIDTH - 1 : 0]        i_dsp_rsv_st_id_3,
+    input   [`SBUFF_ID_WIDTH - 1        : 0]        i_dsp_rsv_st_id_3,
     input   [`DECINFO_WIDTH - 1         : 0]        i_dsp_rsv_decinfo_bus_3,
     input   [`PREDINFO_WIDTH - 1        : 0]        i_dsp_rsv_predinfo_bus_3,
     input   [`IMM_WIDTH - 1             : 0]        i_dsp_rsv_imm_3,
@@ -82,9 +82,9 @@ module rsv_data_module (
 	output  [`PRF_CODE_WIDTH - 1        : 0]        o_rsv_prf_code_2,
     output  [`ROB_ID_WIDTH - 1          : 0]        o_rsv_rob_id_3,
     output                                          o_rsv_ld_vld_3,
-    output  [`LOAD_BUFFER_ID_WIDTH - 1  : 0]        o_rsv_ld_id_3,
+    output  [`LBUFF_ID_WIDTH - 1  : 0]        o_rsv_ld_id_3,
     output                                          o_rsv_st_vld_3,
-    output  [`STORE_BUFFER_ID_WIDTH - 1 : 0]        o_rsv_st_id_3,
+    output  [`SBUFF_ID_WIDTH - 1 : 0]        o_rsv_st_id_3,
     output  [`EXCEPTION_CODE_WIDTH - 1  : 0]        o_rsv_excp_code_3,
     output  [`DECINFO_WIDTH - 1         : 0]        o_rsv_decinfo_bus_3,
     output  [`IMM_WIDTH - 1             : 0]        o_rsv_imm_3,
@@ -185,9 +185,9 @@ endgenerate
 
 //
 wire o_rsv_ld_vld_0;
-wire [`LOAD_BUFFER_ID_WIDTH - 1 : 0] o_rsv_ld_id_0;
+wire [`LBUFF_ID_WIDTH - 1 : 0] o_rsv_ld_id_0;
 wire o_rsv_st_vld_0;
-wire [`STORE_BUFFER_ID_WIDTH - 1 : 0] o_rsv_st_id_0;
+wire [`SBUFF_ID_WIDTH - 1 : 0] o_rsv_st_id_0;
 wire [`PREDINFO_WIDTH - 1 : 0] o_rsv_predinfo_bus_0;
 
 assign {
@@ -207,9 +207,9 @@ assign {
 
 //
 wire o_rsv_ld_vld_1;
-wire [`LOAD_BUFFER_ID_WIDTH - 1 : 0] o_rsv_ld_id_1;
+wire [`LBUFF_ID_WIDTH - 1 : 0] o_rsv_ld_id_1;
 wire o_rsv_st_vld_1;
-wire [`STORE_BUFFER_ID_WIDTH - 1 : 0] o_rsv_st_id_1;
+wire [`SBUFF_ID_WIDTH - 1 : 0] o_rsv_st_id_1;
 
 assign {
             o_rsv_rob_id_1
@@ -228,9 +228,9 @@ assign {
 
 //
 wire o_rsv_ld_vld_2;
-wire [`LOAD_BUFFER_ID_WIDTH - 1 : 0] o_rsv_ld_id_2;
+wire [`LBUFF_ID_WIDTH - 1 : 0] o_rsv_ld_id_2;
 wire o_rsv_st_vld_2;
-wire [`STORE_BUFFER_ID_WIDTH - 1 : 0] o_rsv_st_id_2;
+wire [`SBUFF_ID_WIDTH - 1 : 0] o_rsv_st_id_2;
 wire [`PREDINFO_WIDTH - 1 : 0] o_rsv_predinfo_bus_2;
 
 assign {

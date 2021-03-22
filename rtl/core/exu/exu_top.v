@@ -107,7 +107,7 @@ module exu_top_module (
     input   [`LBUFF_ID_WIDTH - 1                : 0]    i_dsp_exu_ld_ret_ptr,
     input   [`SBUFF_ID_WIDTH - 1                : 0]    i_dsp_exu_st_dsp_ptr,
     input   [`SBUFF_ID_WIDTH - 1                : 0]    i_dsp_exu_st_ret_ptr,
-    input   [`SBUfF_ID_WIDTH - 1                : 0]    i_dsp_exu_st_ret_cptr,
+    input   [`SBUFF_ID_WIDTH - 1                : 0]    i_dsp_exu_st_ret_cptr,
     input   [3                                  : 0]    i_rob_exu_ret_vld,
     input                                               i_rob_exu_ret_ld_vld_0,
     input   [`LBUFF_ID_WIDTH - 1                : 0]    i_rob_exu_ret_ld_id_0,

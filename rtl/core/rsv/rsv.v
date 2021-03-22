@@ -167,33 +167,33 @@ assign {
 }
 
 //
-wire rsv_inst_3_is_alu	  = ((i_dsp_rsv_decinfo_bus_3[`DECINFO_EXEC_UNIT] == `UOPINFO_ALU)
-						  |  (i_dsp_rsv_decinfo_bus_3[`DECINFO_EXEC_UNIT] == `UOPINFO_CSR));
-wire rsv_inst_3_is_bjp	  = (i_dsp_rsv_decinfo_bus_3[`DECINFO_EXEC_UNIT] == `UOPINFO_BJP);
-wire rsv_inst_3_is_muldiv = (i_dsp_rsv_decinfo_bus_3[`DECINFO_EXEC_UNIT] == `UOPINFO_MULDIV);
-wire rsv_inst_3_is_agu	  = ((i_dsp_rsv_decinfo_bus_3[`DECINFO_EXEC_UNIT] == `UOPINFO_AGU)
-						  |  (i_dsp_rsv_decinfo_bus_3[`DECINFO_EXEC_UNIT] == `UOPINFO_AMO));
+wire rsv_inst_3_is_alu	  = ((i_dsp_rsv_decinfo_bus_3[`DECINFO_EXEC_UNIT] == `DECINFO_ALU)
+						  |  (i_dsp_rsv_decinfo_bus_3[`DECINFO_EXEC_UNIT] == `DECINFO_CSR));
+wire rsv_inst_3_is_bjp	  = (i_dsp_rsv_decinfo_bus_3[`DECINFO_EXEC_UNIT] == `DECINFO_BJP);
+wire rsv_inst_3_is_muldiv = (i_dsp_rsv_decinfo_bus_3[`DECINFO_EXEC_UNIT] == `DECINFO_MULDIV);
+wire rsv_inst_3_is_agu	  = ((i_dsp_rsv_decinfo_bus_3[`DECINFO_EXEC_UNIT] == `DECINFO_AGU)
+						  |  (i_dsp_rsv_decinfo_bus_3[`DECINFO_EXEC_UNIT] == `DECINFO_AMO));
 
-wire rsv_inst_2_is_alu	  = ((i_dsp_rsv_decinfo_bus_2[`DECINFO_EXEC_UNIT] == `UOPINFO_ALU)
-						  |  (i_dsp_rsv_decinfo_bus_2[`DECINFO_EXEC_UNIT] == `UOPINFO_CSR));
-wire rsv_inst_2_is_bjp	  = (i_dsp_rsv_decinfo_bus_2[`DECINFO_EXEC_UNIT] == `UOPINFO_BJP);
-wire rsv_inst_2_is_muldiv = (i_dsp_rsv_decinfo_bus_2[`DECINFO_EXEC_UNIT] == `UOPINFO_MULDIV);
-wire rsv_inst_2_is_agu	  = ((i_dsp_rsv_decinfo_bus_2[`DECINFO_EXEC_UNIT] == `UOPINFO_AGU)
-						  |  (i_dsp_rsv_decinfo_bus_2[`DECINFO_EXEC_UNIT] == `UOPINFO_AMO));
+wire rsv_inst_2_is_alu	  = ((i_dsp_rsv_decinfo_bus_2[`DECINFO_EXEC_UNIT] == `DECINFO_ALU)
+						  |  (i_dsp_rsv_decinfo_bus_2[`DECINFO_EXEC_UNIT] == `DECINFO_CSR));
+wire rsv_inst_2_is_bjp	  = (i_dsp_rsv_decinfo_bus_2[`DECINFO_EXEC_UNIT] == `DECINFO_BJP);
+wire rsv_inst_2_is_muldiv = (i_dsp_rsv_decinfo_bus_2[`DECINFO_EXEC_UNIT] == `DECINFO_MULDIV);
+wire rsv_inst_2_is_agu	  = ((i_dsp_rsv_decinfo_bus_2[`DECINFO_EXEC_UNIT] == `DECINFO_AGU)
+						  |  (i_dsp_rsv_decinfo_bus_2[`DECINFO_EXEC_UNIT] == `DECINFO_AMO));
 
-wire rsv_inst_1_is_alu	  = ((i_dsp_rsv_decinfo_bus_1[`DECINFO_EXEC_UNIT] == `UOPINFO_ALU)
-						  |  (i_dsp_rsv_decinfo_bus_1[`DECINFO_EXEC_UNIT] == `UOPINFO_CSR));
-wire rsv_inst_1_is_bjp	  = (i_dsp_rsv_decinfo_bus_1[`DECINFO_EXEC_UNIT] == `UOPINFO_BJP);
-wire rsv_inst_1_is_muldiv = (i_dsp_rsv_decinfo_bus_1[`DECINFO_EXEC_UNIT] == `UOPINFO_MULDIV);
-wire rsv_inst_1_is_agu	  = ((i_dsp_rsv_decinfo_bus_1[`DECINFO_EXEC_UNIT] == `UOPINFO_AGU)
-						  |  (i_dsp_rsv_decinfo_bus_1[`DECINFO_EXEC_UNIT] == `UOPINFO_AMO));
+wire rsv_inst_1_is_alu	  = ((i_dsp_rsv_decinfo_bus_1[`DECINFO_EXEC_UNIT] == `DECINFO_ALU)
+						  |  (i_dsp_rsv_decinfo_bus_1[`DECINFO_EXEC_UNIT] == `DECINFO_CSR));
+wire rsv_inst_1_is_bjp	  = (i_dsp_rsv_decinfo_bus_1[`DECINFO_EXEC_UNIT] == `DECINFO_BJP);
+wire rsv_inst_1_is_muldiv = (i_dsp_rsv_decinfo_bus_1[`DECINFO_EXEC_UNIT] == `DECINFO_MULDIV);
+wire rsv_inst_1_is_agu	  = ((i_dsp_rsv_decinfo_bus_1[`DECINFO_EXEC_UNIT] == `DECINFO_AGU)
+						  |  (i_dsp_rsv_decinfo_bus_1[`DECINFO_EXEC_UNIT] == `DECINFO_AMO));
 
-wire rsv_inst_0_is_alu	  = ((i_dsp_rsv_decinfo_bus_0[`DECINFO_EXEC_UNIT] == `UOPINFO_ALU)
-						  |  (i_dsp_rsv_decinfo_bus_0[`DECINFO_EXEC_UNIT] == `UOPINFO_CSR));
-wire rsv_inst_0_is_bjp	  = (i_dsp_rsv_decinfo_bus_0[`DECINFO_EXEC_UNIT] == `UOPINFO_BJP);
-wire rsv_inst_0_is_muldiv = (i_dsp_rsv_decinfo_bus_0[`DECINFO_EXEC_UNIT] == `UOPINFO_MULDIV);
-wire rsv_inst_0_is_agu	  = ((i_dsp_rsv_decinfo_bus_0[`DECINFO_EXEC_UNIT] == `UOPINFO_AGU)
-						  |  (i_dsp_rsv_decinfo_bus_0[`DECINFO_EXEC_UNIT] == `UOPINFO_AMO));
+wire rsv_inst_0_is_alu	  = ((i_dsp_rsv_decinfo_bus_0[`DECINFO_EXEC_UNIT] == `DECINFO_ALU)
+						  |  (i_dsp_rsv_decinfo_bus_0[`DECINFO_EXEC_UNIT] == `DECINFO_CSR));
+wire rsv_inst_0_is_bjp	  = (i_dsp_rsv_decinfo_bus_0[`DECINFO_EXEC_UNIT] == `DECINFO_BJP);
+wire rsv_inst_0_is_muldiv = (i_dsp_rsv_decinfo_bus_0[`DECINFO_EXEC_UNIT] == `DECINFO_MULDIV);
+wire rsv_inst_0_is_agu	  = ((i_dsp_rsv_decinfo_bus_0[`DECINFO_EXEC_UNIT] == `DECINFO_AGU)
+						  |  (i_dsp_rsv_decinfo_bus_0[`DECINFO_EXEC_UNIT] == `DECINFO_AMO));
 
 //  ALU age mtrx
 wire [3 : 0] i_dsp_rsv_alu_vld = {	

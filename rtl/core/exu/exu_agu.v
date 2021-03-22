@@ -42,9 +42,9 @@ module exu_agu_module (
     input   [`DECINFO_WIDTH - 1         : 0]        i_dsp_rsv_decinfo_bus_3,
     input   [`LBUFF_ID_WIDTH - 1        : 0]        i_dsp_exu_ld_dsp_ptr,
     input   [`LBUFF_ID_WIDTH - 1        : 0]        i_dsp_exu_ld_ret_ptr,
-    input   [`SBUfF_ID_WIDTH - 1        : 0]        i_dsp_exu_st_dsp_ptr,
-    input   [`SBUfF_ID_WIDTH - 1        : 0]        i_dsp_exu_st_ret_ptr,
-    input   [`SBUfF_ID_WIDTH - 1        : 0]        i_dsp_exu_st_ret_cptr,
+    input   [`SBUFF_ID_WIDTH - 1        : 0]        i_dsp_exu_st_dsp_ptr,
+    input   [`SBUFF_ID_WIDTH - 1        : 0]        i_dsp_exu_st_ret_ptr,
+    input   [`SBUFF_ID_WIDTH - 1        : 0]        i_dsp_exu_st_ret_cptr,
 
 
     input   [3                          : 0]        i_rob_exu_ret_vld,
@@ -157,7 +157,7 @@ wire [`ROB_ID_WIDTH - 1   : 0] agu_rob_id;
 wire                           agu_ld_vld;
 wire [`LBUFF_ID_WIDTH - 1 : 0] agu_ld_id;
 wire                           agu_st_vld;
-wire [`SBUfF_ID_WIDTH - 1 : 0] agu_st_id;
+wire [`SBUFF_ID_WIDTH - 1 : 0] agu_st_id;
 wire [`DECINFO_WIDTH - 1  : 0] agu_decinfo_bus;
 wire [`IMM_WIDTH - 1      : 0] agu_imm;
 

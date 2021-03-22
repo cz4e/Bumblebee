@@ -193,12 +193,12 @@ wire [`RSV_ENTRY_NUMS - 1 : 0] rsv_exec_unit_vec_3;
 genvar k;
 generate
     for(k = 0; k < `RSV_ENTRY_NUMS; k = k + 1) begin
-        assign rsv_exec_unit_vec_0[k] = (rsv_exec_unit_r[k] == `UOPINFO_ALU)
-                                      | (rsv_exec_unit_r[k] == `UOPINFO_CSR);
-        assign rsv_exec_unit_vec_1[k] = (rsv_exec_unit_r[k] == `UOPINFO_BJP);
-        assign rsv_exec_unit_vec_2[k] = (rsv_exec_unit_r[k] == `UOPINFO_MULDIV);
-        assign rsv_exec_unit_vec_3[k] = (rsv_exec_unit_r[k] == `UOPINFO_AGU)
-                                      | (rsv_exec_unit_r[k] == `UOPINFO_AMO);
+        assign rsv_exec_unit_vec_0[k] = (rsv_exec_unit_r[k] == `DECINFO_ALU)
+                                      | (rsv_exec_unit_r[k] == `DECINFO_CSR);
+        assign rsv_exec_unit_vec_1[k] = (rsv_exec_unit_r[k] == `DECINFO_BJP);
+        assign rsv_exec_unit_vec_2[k] = (rsv_exec_unit_r[k] == `DECINFO_MULDIV);
+        assign rsv_exec_unit_vec_3[k] = (rsv_exec_unit_r[k] == `DECINFO_AGU)
+                                      | (rsv_exec_unit_r[k] == `DECINFO_AMO);
     end
 endgenerate
 
