@@ -137,6 +137,7 @@ assign agu_info_nxt = {
                         ,   i_rsv_exu_st_vld
                         ,   i_rsv_exu_st_id
                         ,   i_rsv_exu_decinfo_bus
+                        ,   i_rsv_exu_excp_code
                         ,   i_rsv_exu_imm
                     };
 
@@ -159,6 +160,7 @@ wire [`LBUFF_ID_WIDTH - 1 : 0] agu_ld_id;
 wire                           agu_st_vld;
 wire [`SBUFF_ID_WIDTH - 1 : 0] agu_st_id;
 wire [`DECINFO_WIDTH - 1  : 0] agu_decinfo_bus;
+wire [`EXCEPTION_CODE_WIDTH - 1 : 0] agu_excp_code;
 wire [`IMM_WIDTH - 1      : 0] agu_imm;
 
 assign {
@@ -176,6 +178,7 @@ assign {
         ,   agu_st_vld
         ,   agu_st_id
         ,   agu_decinfo_bus
+        ,   agu_excp_code
         ,   agu_imm
         ,   agu_vld
 } = {

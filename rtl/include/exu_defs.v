@@ -14,6 +14,7 @@
                                     + 1
                                     + `SBUFF_ID_WIDTH
                                     + `DECINFO_WIDTH
+                                    + `EXCEPTION_CODE_WIDTH
                                     + `IMM_WIDTH)
 
 `define ALU_INFO_WIDTH               ( 1
