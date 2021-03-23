@@ -14,4 +14,11 @@
                                     + `EXCEPTION_CODE_WIDTH         /*  Exception code.             */
                                     + 1)                            /*  Instruction type.           */
 
+`define PREDINFO_WIDTH              ( 1
+                                    + 1
+                                    + 2
+                                    + 11
+                                    + 2
+                                    + 1
+                                    + 1)
 `endif  /*  !__INCLUDE_IQ_V__!  */
