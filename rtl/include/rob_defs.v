@@ -13,7 +13,7 @@
                                   + 1 
                                   + `INSTR_WIDTH) 
 
-`define ROB_INST_INFO_INST       `INSTR_WIDTH - 1 : 0
+`define ROB_INST_INFO_INST       31 : 0
 `define ROB_INST_INFO_LEN        32
 `define ROB_INST_INFO_PREDINFO   51 : 33
 `define ROB_INST_INFO_DECINFO    83 : 52
@@ -25,5 +25,6 @@
 `define ROB_INST_INFO_PRF        111 : 105
 `define ROB_INST_INFO_ARF        116 : 112
 `define ROB_INST_INFO_DST_VLD    117
+
 
 `endif  /*  !__INCLUDE_ROB_DEFS_V__!    */

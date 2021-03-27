@@ -53,6 +53,10 @@ module dsp_top_module (
     input   [`PREDINFO_WIDTH - 1        : 0]    i_dec_dsp_predinfo_bus_1,
     input   [`PREDINFO_WIDTH - 1        : 0]    i_dec_dsp_predinfo_bus_2,
     input   [`PREDINFO_WIDTH - 1        : 0]    i_dec_dsp_predinfo_bus_3,
+    input   [`EXCEPTION_CODE_WIDTH - 1  : 0]    i_dec_dsp_excp_code_0,
+    input   [`EXCEPTION_CODE_WIDTH - 1  : 0]    i_dec_dsp_excp_code_1,
+    input   [`EXCEPTION_CODE_WIDTH - 1  : 0]    i_dec_dsp_excp_code_2,
+    input   [`EXCEPTION_CODE_WIDTH - 1  : 0]    i_dec_dsp_excp_code_3,
     input   [`INSTR_WIDTH - 1           : 0]    i_dec_dsp_instr_0,
     input   [`INSTR_WIDTH - 1           : 0]    i_dec_dsp_instr_1,
     input   [`INSTR_WIDTH - 1           : 0]    i_dec_dsp_instr_2,
@@ -143,6 +147,10 @@ module dsp_top_module (
     output  [`PREDINFO_WIDTH - 1        : 0]    o_dsp_rsv_predinfo_bus_1,
     output  [`PREDINFO_WIDTH - 1        : 0]    o_dsp_rsv_predinfo_bus_2,
     output  [`PREDINFO_WIDTH - 1        : 0]    o_dsp_rsv_predinfo_bus_3,
+    output  [`EXCEPTION_CODE_WIDTH - 1  : 0]    o_dsp_rsv_excp_code_0,
+    output  [`EXCEPTION_CODE_WIDTH - 1  : 0]    o_dsp_rsv_excp_code_1,
+    output  [`EXCEPTION_CODE_WIDTH - 1  : 0]    o_dsp_rsv_excp_code_2,
+    output  [`EXCEPTION_CODE_WIDTH - 1  : 0]    o_dsp_rsv_excp_code_3,
     output  [`RSV_IDX_WIDTH - 1         : 0]    o_dsp_rsv_free_entry_0,
     output  [`RSV_IDX_WIDTH - 1         : 0]    o_dsp_rsv_free_entry_1,
     output  [`RSV_IDX_WIDTH - 1         : 0]    o_dsp_rsv_free_entry_2,
@@ -245,6 +253,10 @@ assign {
     ,   o_dsp_rsv_predinfo_bus_1
     ,   o_dsp_rsv_predinfo_bus_2
     ,   o_dsp_rsv_predinfo_bus_3
+    ,   o_dsp_rsv_excp_code_0
+    ,   o_dsp_rsv_excp_code_1
+    ,   o_dsp_rsv_excp_code_2
+    ,   o_dsp_rsv_excp_code_3
     ,   o_dsp_rob_taddr_0 
     ,   o_dsp_rob_taddr_1 
     ,   o_dsp_rob_taddr_2
@@ -302,6 +314,10 @@ assign {
     ,   i_dec_dsp_predinfo_bus_1
     ,   i_dec_dsp_predinfo_bus_2
     ,   i_dec_dsp_predinfo_bus_3
+    ,   i_dec_dsp_excp_code_0
+    ,   i_dec_dsp_excp_code_1
+    ,   i_dec_dsp_excp_code_2
+    ,   i_dec_dsp_excp_code_3
     ,   i_dsp_rob_taddr_0
     ,   i_dsp_rob_taddr_1
     ,   i_dsp_rob_taddr_2
@@ -318,14 +334,14 @@ assign {
 };
 
 //
-wire dsp_ld_vld_0 = ((i_dec_dsp_decinfo_bus_0[`DECINFO_EXEC_UNIT] == `UOPINFO_AGU) & i_dec_dsp_decinfo_bus_0[`DECINFO_AGU_LOAD]);
-wire dsp_st_vld_0 = ((i_dec_dsp_decinfo_bus_0[`DECINFO_EXEC_UNIT] == `UOPINFO_AGU) & i_dec_dsp_decinfo_bus_0[`DECINFO_AGU_STORE]);
-wire dsp_ld_vld_1 = ((i_dec_dsp_decinfo_bus_1[`DECINFO_EXEC_UNIT] == `UOPINFO_AGU) & i_dec_dsp_decinfo_bus_1[`DECINFO_AGU_LOAD]);
-wire dsp_st_vld_1 = ((i_dec_dsp_decinfo_bus_1[`DECINFO_EXEC_UNIT] == `UOPINFO_AGU) & i_dec_dsp_decinfo_bus_1[`DECINFO_AGU_STORE]);
-wire dsp_ld_vld_2 = ((i_dec_dsp_decinfo_bus_2[`DECINFO_EXEC_UNIT] == `UOPINFO_AGU) & i_dec_dsp_decinfo_bus_2[`DECINFO_AGU_LOAD]);
-wire dsp_st_vld_2 = ((i_dec_dsp_decinfo_bus_2[`DECINFO_EXEC_UNIT] == `UOPINFO_AGU) & i_dec_dsp_decinfo_bus_2[`DECINFO_AGU_STORE]);
-wire dsp_ld_vld_3 = ((i_dec_dsp_decinfo_bus_3[`DECINFO_EXEC_UNIT] == `UOPINFO_AGU) & i_dec_dsp_decinfo_bus_3[`DECINFO_AGU_LOAD]);
-wire dsp_st_vld_3 = ((i_dec_dsp_decinfo_bus_3[`DECINFO_EXEC_UNIT] == `UOPINFO_AGU) & i_dec_dsp_decinfo_bus_3[`DECINFO_AGU_STORE]);
+wire dsp_ld_vld_0 = ((i_dec_dsp_decinfo_bus_0[`DECINFO_EXEC_UNIT] == `DECINFO_AGU) & i_dec_dsp_decinfo_bus_0[`DECINFO_AGU_LOAD]);
+wire dsp_st_vld_0 = ((i_dec_dsp_decinfo_bus_0[`DECINFO_EXEC_UNIT] == `DECINFO_AGU) & i_dec_dsp_decinfo_bus_0[`DECINFO_AGU_STORE]);
+wire dsp_ld_vld_1 = ((i_dec_dsp_decinfo_bus_1[`DECINFO_EXEC_UNIT] == `DECINFO_AGU) & i_dec_dsp_decinfo_bus_1[`DECINFO_AGU_LOAD]);
+wire dsp_st_vld_1 = ((i_dec_dsp_decinfo_bus_1[`DECINFO_EXEC_UNIT] == `DECINFO_AGU) & i_dec_dsp_decinfo_bus_1[`DECINFO_AGU_STORE]);
+wire dsp_ld_vld_2 = ((i_dec_dsp_decinfo_bus_2[`DECINFO_EXEC_UNIT] == `DECINFO_AGU) & i_dec_dsp_decinfo_bus_2[`DECINFO_AGU_LOAD]);
+wire dsp_st_vld_2 = ((i_dec_dsp_decinfo_bus_2[`DECINFO_EXEC_UNIT] == `DECINFO_AGU) & i_dec_dsp_decinfo_bus_2[`DECINFO_AGU_STORE]);
+wire dsp_ld_vld_3 = ((i_dec_dsp_decinfo_bus_3[`DECINFO_EXEC_UNIT] == `DECINFO_AGU) & i_dec_dsp_decinfo_bus_3[`DECINFO_AGU_LOAD]);
+wire dsp_st_vld_3 = ((i_dec_dsp_decinfo_bus_3[`DECINFO_EXEC_UNIT] == `DECINFO_AGU) & i_dec_dsp_decinfo_bus_3[`DECINFO_AGU_STORE]);
 
 //  GEN
 wire o_dsp_gen_ldq_list_empty;
@@ -513,7 +529,7 @@ wire [`DECINFO_WIDTH - 1 : 0] fence_sync_inst = {
                                                 ,   `DECINFO_ALU 
                                             };
 
-assign o_dsp_rsv_reninfo_bus_0   = ({`DECINFO_WIDTH{(~(csr_stall_detect | fence_stall_detect))}} & i_dec_dsp_decinfo_bus_0)                                                          )
+assign o_dsp_rsv_decinfo_bus_0   = ({`DECINFO_WIDTH{(~(csr_stall_detect | fence_stall_detect))}} & i_dec_dsp_decinfo_bus_0)                                                          )
                                  | ({`DECINFO_WIDTH{csr_stall_detect                          }} & csr_sync_inst          )
                                  | ({`DECINFO_WIDTH{fence_stall_detect                        }} & fence_sync_inst        );
 

@@ -34,7 +34,7 @@ module alu_module (
     output  [31                         : 0]        o_exu_rsv_wdat,
     output                                          o_exu_rsv_busy,
     output                                          o_exu_rob_vld,
-    output  [`CSR_EXCEPT_WIDTH - 1      : 0]        o_exu_rob_excp_code,
+    output  [`EXCEPTION_CODE_WIDTH - 1  : 0]        o_exu_rob_excp_code,
     output                                          o_exu_rob_done,
     output  [`ROB_ID_WIDTH - 1          : 0]        o_exu_rob_rob_id,
     output  [31                         : 0]        o_exu_rob_fence_src1,

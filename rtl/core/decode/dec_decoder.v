@@ -895,11 +895,11 @@ wire agu_op     = rv32_amo_op
                 | rv16_swsp | rv16_sdsp;
 
 wire [`DECINFO_WIDTH - 1 : 0] rv_info_bus = ({`DECINFO_WIDTH{bjp_op   }}      & bjp_info_bus   )
-                                               | ({`DECINFO_WIDTH{alu_op   }}      & alu_info_bus   )
-                                               | ({`DECINFO_WIDTH{csr_op   }}      & csr_info_bus   )
-                                               | ({`DECINFO_WIDTH{muldiv_op}}      & muldiv_info_bus)
-                                               | ({`DECINFO_WIDTH{fpu_op   }}      & fpu_info_bus   )
-                                               | ({`DECINFO_WIDTH{agu_op   }}      & agu_info_bus   );
+                                          | ({`DECINFO_WIDTH{alu_op   }}      & alu_info_bus   )
+                                          | ({`DECINFO_WIDTH{csr_op   }}      & csr_info_bus   )
+                                          | ({`DECINFO_WIDTH{muldiv_op}}      & muldiv_info_bus)
+                                          | ({`DECINFO_WIDTH{fpu_op   }}      & fpu_info_bus   )
+                                          | ({`DECINFO_WIDTH{agu_op   }}      & agu_info_bus   );
 wire legl_ops   = bjp_op | alu_op | csr_op | muldiv_op | fpu_op | agu_op;
 
 

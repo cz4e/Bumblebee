@@ -95,21 +95,5 @@
 `define DECINFO_FPU_CVTSWU                  29
 `define DECINFO_FPU_MVWX                    30
 
-`define DECINFO_ILGL                        0
-`define DECINFO_EXCEPT                      3 : 1
-`define DECINFO_LEN                         4
-`define DECINFO_RS1_VLD                     5
-`define DECINFO_RS1_CODE                    10 : 6
-`define DECINFO_RS2_VLD                     11
-`define DECINFO_RS2_CODE                    16 : 12
-`define DECINFO_RS3_VLD                     17
-`define DECINFO_RS3_CODE                    22 : 18
-`define DECINFO_RD_VLD                      23
-`define DECINFO_RD_CODE                     28 : 24
-`define DECINFO_IMM_VLD                     29
-`define DECINFO_IMM                         61 : 30
-`define DECINFO_EXEC_CYCLE                  66 : 62
-`define DECINFO_INFO_BUS                    98 : 67
-`define DECINFO_WIDTH                       99
 
 `endif  /*  !__INCLUDE_DEC_DEFS_V__!    */

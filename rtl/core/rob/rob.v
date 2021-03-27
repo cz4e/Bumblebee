@@ -195,6 +195,7 @@ module rob_module (
     input                                               clk,
     input                                               rst_n
 );
+
 wire [127                       : 0] rob_vld_r;
 wire [`ROB_INST_INFO_WIDTH - 1  : 0] rob_inst_info_r [127 : 0];
 wire [`ROB_ID_WIDTH - 1         : 0] rob_rob_id_r [127 : 0];
@@ -202,14 +203,16 @@ wire [127                       : 0] rob_done_r;
 wire [`EXCEPTION_CODE_WIDTH - 1 : 0] rob_excp_r [127 : 0];
 wire [2 * `CORE_PC_WIDTH - 1    : 0] rob_addr_r [127 : 0];
 
+
 //
 wire i_exu_mis_ls_flush = (i_exu_mis_flush | i_exu_ls_flush);
 wire i_exu_mis_ls_both = (i_exu_mis_flush & i_exu_ls_flush);
 wire [`ROB_ID_WIDTH - 1 : 0] i_exu_mis_ls_rob_id = i_exu_mis_ls_both ? (func_rob_old(i_exu_mis_rob_id, i_exu_ls_rob_id) ? i_exu_mis_rob_id : i_exu_ls_rob_id)
                                                  : i_exu_mis_flush ? i_exu_mis_rob_id
                                                  : i_exu_ls_rob_id;
+
 //
-wire rob_req = (|i_dsp_rob_vld);
+wire rob_vld = (|i_dsp_rob_vld);
 wire rob_ret = (|o_rob_dsp_ret_vld);
 
 //
@@ -234,12 +237,11 @@ endgenerate
 
 wire [127 : 0] rob_vld_nxt = ((rob_vld_r | rob_vld_set) & (~rob_vld_clr));
 
-wire rob_vld_ena = (rob_req | rob_ret);
+wire rob_vld_ena = (rob_vld | rob_ret);
 gnrl_dfflr #( 
     .DATA_WIDTH   (128),
     .INITIAL_VALUE(0)
 ) rob_vld_dfflr (rob_vld_ena, rob_vld_nxt, rob_vld_r, clk, rst_n);
-
 
 //  Modify rob_inst_info_r
 wire [`ROB_INST_INFO_WIDTH - 1 : 0] rob_inst_info_wdat_0 = {
@@ -319,93 +321,95 @@ wire [2 * `CORE_PC_WIDTH - 1 : 0] rob_addr_wdat_3 = {
                                                         ,   i_dsp_rob_addr_3
                                                     };
 
+
 wire [127 : 0] rob_inst_ena;
 wire [`ROB_INST_INFO_WIDTH - 1 : 0] rob_inst_nxt [127 : 0];
 wire [`ROB_ID_WIDTH - 1 : 0] rob_rob_id_nxt [127 : 0];
 wire [2 * `CORE_PC_WIDTH - 1 : 0] rob_addr_nxt [127 : 0];
 
-genvar inst_idx;
+genvar j;
 generate
-    for(inst_idx = 0; inst_idx < 128; inst_idx = inst_idx + 1) begin
-        assign rob_inst_ena[inst_idx] = (rob_req 
-                                      & ((inst_idx == i_dsp_rob_rob_id_0[`ROB_ID_WIDTH - 2 : 0])
-                                      |  (inst_idx == i_dsp_rob_rob_id_1[`ROB_ID_WIDTH - 2 : 0])
-                                      |  (inst_idx == i_dsp_rob_rob_id_2[`ROB_ID_WIDTH - 2 : 0])
-                                      |  (inst_idx == i_dsp_rob_rob_id_3[`ROB_ID_WIDTH - 2 : 0])));
-        assign rob_inst_nxt[inst_idx] = ({`ROB_INST_INFO_WIDTH{(inst_idx == i_dsp_rob_rob_id_0[`ROB_ID_WIDTH - 2 : 0])}} & rob_inst_info_wdat_0)
-                                      | ({`ROB_INST_INFO_WIDTH{(inst_idx == i_dsp_rob_rob_id_1[`ROB_ID_WIDTH - 2 : 0])}} & rob_inst_info_wdat_1)
-                                      | ({`ROB_INST_INFO_WIDTH{(inst_idx == i_dsp_rob_rob_id_2[`ROB_ID_WIDTH - 2 : 0])}} & rob_inst_info_wdat_2)
-                                      | ({`ROB_INST_INFO_WIDTH{(inst_idx == i_dsp_rob_rob_id_3[`ROB_ID_WIDTH - 2 : 0])}} & rob_inst_info_wdat_3);
+    for(j = 0; j < 128; j = j + 1) begin
+        assign rob_inst_ena[j] = (rob_req 
+                               & ((j == i_dsp_rob_rob_id_0[`ROB_ID_WIDTH - 2 : 0])
+                               |  (j == i_dsp_rob_rob_id_1[`ROB_ID_WIDTH - 2 : 0])
+                               |  (j == i_dsp_rob_rob_id_2[`ROB_ID_WIDTH - 2 : 0])
+                               |  (j == i_dsp_rob_rob_id_3[`ROB_ID_WIDTH - 2 : 0])));
+        assign rob_inst_nxt[j] = ({`ROB_INST_INFO_WIDTH{(j == i_dsp_rob_rob_id_0[`ROB_ID_WIDTH - 2 : 0])}} & rob_inst_info_wdat_0)
+                               | ({`ROB_INST_INFO_WIDTH{(j == i_dsp_rob_rob_id_1[`ROB_ID_WIDTH - 2 : 0])}} & rob_inst_info_wdat_1)
+                               | ({`ROB_INST_INFO_WIDTH{(j == i_dsp_rob_rob_id_2[`ROB_ID_WIDTH - 2 : 0])}} & rob_inst_info_wdat_2)
+                               | ({`ROB_INST_INFO_WIDTH{(j == i_dsp_rob_rob_id_3[`ROB_ID_WIDTH - 2 : 0])}} & rob_inst_info_wdat_3);
         gnrl_dffl #( 
             .DATA_WIDTH(`ROB_INST_INFO_WIDTH)
-        ) rob_inst_dffl (rob_inst_ena[inst_idx], rob_inst_nxt[inst_idx], rob_inst_info_r[inst_idx], clk);
+        ) rob_inst_dffl (rob_inst_ena[j], rob_inst_nxt[j], rob_inst_info_r[j], clk);
 
-        assign rob_rob_id_nxt[inst_idx] = ({`ROB_ID_WIDTH{(inst_idx == i_dsp_rob_rob_id_0[`ROB_ID_WIDTH - 2 : 0])}} & i_dsp_rob_rob_id_0)
-                                        | ({`ROB_ID_WIDTH{(inst_idx == i_dsp_rob_rob_id_1[`ROB_ID_WIDTH - 2 : 0])}} & i_dsp_rob_rob_id_1)
-                                        | ({`ROB_ID_WIDTH{(inst_idx == i_dsp_rob_rob_id_2[`ROB_ID_WIDTH - 2 : 0])}} & i_dsp_rob_rob_id_2)
-                                        | ({`ROB_ID_WIDTH{(inst_idx == i_dsp_rob_rob_id_3[`ROB_ID_WIDTH - 2 : 0])}} & i_dsp_rob_rob_id_3);
+        assign rob_rob_id_nxt[j] = ({`ROB_ID_WIDTH{(j == i_dsp_rob_rob_id_0[`ROB_ID_WIDTH - 2 : 0])}} & i_dsp_rob_rob_id_0)
+                                 | ({`ROB_ID_WIDTH{(j == i_dsp_rob_rob_id_1[`ROB_ID_WIDTH - 2 : 0])}} & i_dsp_rob_rob_id_1)
+                                 | ({`ROB_ID_WIDTH{(j == i_dsp_rob_rob_id_2[`ROB_ID_WIDTH - 2 : 0])}} & i_dsp_rob_rob_id_2)
+                                 | ({`ROB_ID_WIDTH{(j == i_dsp_rob_rob_id_3[`ROB_ID_WIDTH - 2 : 0])}} & i_dsp_rob_rob_id_3);
         gnrl_dffl #( 
             .DATA_WIDTH(`ROB_ID_WIDTH)
-        ) rob_rob_id_dffl (rob_inst_ena[inst_idx], rob_rob_id_nxt[inst_idx], rob_rob_id_r[inst_idx], clk);
+        ) rob_rob_id_dffl (rob_inst_ena[j], rob_rob_id_nxt[j], rob_rob_id_r[j], clk);
     
-        assign rob_addr_nxt[inst_idx] = ({(2 * `CORE_PC_WIDTH){(inst_idx == i_dsp_rob_rob_id_0[`ROB_ID_WIDTH - 2 : 0])}} & rob_addr_wdat_0)
-                                      | ({(2 * `CORE_PC_WIDTH){(inst_idx == i_dsp_rob_rob_id_1[`ROB_ID_WIDTH - 2 : 0])}} & rob_addr_wdat_1)
-                                      | ({(2 * `CORE_PC_WIDTH){(inst_idx == i_dsp_rob_rob_id_2[`ROB_ID_WIDTH - 2 : 0])}} & rob_addr_wdat_2)
-                                      | ({(2 * `CORE_PC_WIDTH){(inst_idx == i_dsp_rob_rob_id_3[`ROB_ID_WIDTH - 2 : 0])}} & rob_addr_wdat_3);
+        assign rob_addr_nxt[j] = ({(2 * `CORE_PC_WIDTH){(j == i_dsp_rob_rob_id_0[`ROB_ID_WIDTH - 2 : 0])}} & rob_addr_wdat_0)
+                               | ({(2 * `CORE_PC_WIDTH){(j == i_dsp_rob_rob_id_1[`ROB_ID_WIDTH - 2 : 0])}} & rob_addr_wdat_1)
+                               | ({(2 * `CORE_PC_WIDTH){(j == i_dsp_rob_rob_id_2[`ROB_ID_WIDTH - 2 : 0])}} & rob_addr_wdat_2)
+                               | ({(2 * `CORE_PC_WIDTH){(j == i_dsp_rob_rob_id_3[`ROB_ID_WIDTH - 2 : 0])}} & rob_addr_wdat_3);
         gnrl_dffl #( 
             .DATA_WIDTH(2 * `CORE_PC_WIDTH)
-        ) rob_addr_dffl (rob_inst_ena[inst_idx], rob_rob_id_nxt[inst_idx], rob_rob_id_r[inst_idx], clk);
+        ) rob_addr_dffl (rob_inst_ena[j], rob_rob_id_nxt[j], rob_rob_id_r[j], clk);
     end
 endgenerate
+
 
 //  Modify rob_excp_r
 wire [127 : 0] rob_excp_ena;
 wire [`EXCEPTION_CODE_WIDTH - 1 : 0] rob_excp_nxt [127 : 0];
 
-genvar excp_idx;
+genvar k;
 generate
-    for(excp_idx = 0; excp_idx < 128; excp_idx = excp_idx + 1) begin
-        assign rob_excp_ena[excp_idx] = ((i_exu_rob_vld_0 & (excp_idx == i_exu_rob_rob_id_0[`ROB_ID_WIDTH - 2 : 0]))
-                                      |  (i_exu_rob_vld_1 & (excp_idx == i_exu_rob_rob_id_1[`ROB_ID_WIDTH - 2 : 0]))
-                                      |  (i_exu_rob_vld_2 & (excp_idx == i_exu_rob_rob_id_2[`ROB_ID_WIDTH - 2 : 0]))
-                                      |  (i_exu_rob_vld_3 & (excp_idx == i_exu_rob_rob_id_3[`ROB_ID_WIDTH - 2 : 0]))
-                                      |  (i_exu_mis_ls_flush & func_rob_old(i_exu_mis_ls_rob_id, rob_rob_id_r[excp_idx]) & rob_vld_r[excp_idx])
-                                      |  i_csr_trap_flush);
-        assign rob_excp_nxt[excp_idx] = (i_csr_trap_flush | i_exu_mis_ls_flush) ? `EXCEPTION_CODE_WIDTH'd0
-                                      : ({`EXCEPTION_CODE_WIDTH{(excp_idx == i_exu_rob_rob_id_0[`ROB_ID_WIDTH - 2 : 0])}} & i_exu_rob_excp_code_0)
-                                      | ({`EXCEPTION_CODE_WIDTH{(excp_idx == i_exu_rob_rob_id_1[`ROB_ID_WIDTH - 2 : 0])}} & i_exu_rob_excp_code_1)
-                                      | ({`EXCEPTION_CODE_WIDTH{(excp_idx == i_exu_rob_rob_id_2[`ROB_ID_WIDTH - 2 : 0])}} & i_exu_rob_excp_code_2)
-                                      | ({`EXCEPTION_CODE_WIDTH{(excp_idx == i_exu_rob_rob_id_3[`ROB_ID_WIDTH - 2 : 0])}} & i_exu_rob_excp_code_3);
+    for(k = 0; k < 128; k = k + 1) begin
+        assign rob_excp_ena[k] = ((i_exu_rob_vld_0 & (k == i_exu_rob_rob_id_0[`ROB_ID_WIDTH - 2 : 0]))
+                               |  (i_exu_rob_vld_1 & (k == i_exu_rob_rob_id_1[`ROB_ID_WIDTH - 2 : 0]))
+                               |  (i_exu_rob_vld_2 & (k == i_exu_rob_rob_id_2[`ROB_ID_WIDTH - 2 : 0]))
+                               |  (i_exu_rob_vld_3 & (k == i_exu_rob_rob_id_3[`ROB_ID_WIDTH - 2 : 0]))
+                               |  (i_exu_mis_ls_flush & func_rob_old(i_exu_mis_ls_rob_id, rob_rob_id_r[k]) & rob_vld_r[k])
+                               |  i_csr_trap_flush);
+        assign rob_excp_nxt[k] = (i_csr_trap_flush | i_exu_mis_ls_flush) ? `EXCEPTION_CODE_WIDTH'd0
+                               : ({`EXCEPTION_CODE_WIDTH{(k == i_exu_rob_rob_id_0[`ROB_ID_WIDTH - 2 : 0])}} & i_exu_rob_excp_code_0)
+                               | ({`EXCEPTION_CODE_WIDTH{(k == i_exu_rob_rob_id_1[`ROB_ID_WIDTH - 2 : 0])}} & i_exu_rob_excp_code_1)
+                               | ({`EXCEPTION_CODE_WIDTH{(k == i_exu_rob_rob_id_2[`ROB_ID_WIDTH - 2 : 0])}} & i_exu_rob_excp_code_2)
+                               | ({`EXCEPTION_CODE_WIDTH{(k == i_exu_rob_rob_id_3[`ROB_ID_WIDTH - 2 : 0])}} & i_exu_rob_excp_code_3);
         gnrl_dfflr #( 
             .DATA_WIDTH   (`EXCEPTION_CODE_WIDTH),
             .INITIAL_VALUE(0)
-        ) rob_excp_dfflr (rob_excp_ena[excp_idx], rob_excp_nxt[excp_idx], rob_excp_r[excp_idx], clk, rst_n);
+        ) rob_excp_dfflr (rob_excp_ena[k], rob_excp_nxt[k], rob_excp_r[k], clk, rst_n);
     end
 endgenerate
+
 
 //
 wire [127 : 0] rob_done_set;
 wire [127 : 0] rob_done_clr;
 
-genvar j;
+genvar done_idx;
 generate
-    for(j = 0; j < 128; j = j + 1) begin
-        assign rob_done_set[j] = (i_exu_rob_vld_0 & (j == i_exu_rob_rob_id_0[`ROB_ID_WIDTH - 2 : 0]))
-                               | (i_exu_rob_vld_1 & (j == i_exu_rob_rob_id_1[`ROB_ID_WIDTH - 2 : 0]))
-                               | (i_exu_rob_vld_2 & (j == i_exu_rob_rob_id_2[`ROB_ID_WIDTH - 2 : 0]))
-                               | (i_exu_rob_vld_3 & (j == i_exu_rob_rob_id_3[`ROB_ID_WIDTH - 2 : 0]));
-        assign rob_done_clr[j] = (i_csr_trap_flush
-                               | (i_dsp_rob_vld[0] & (j == i_dsp_rob_rob_id_0[`ROB_ID_WIDTH - 2 : 0]))
-                               | (i_dsp_rob_vld[1] & (j == i_dsp_rob_rob_id_1[`ROB_ID_WIDTH - 2 : 0]))
-                               | (i_dsp_rob_vld[2] & (j == i_dsp_rob_rob_id_2[`ROB_ID_WIDTH - 2 : 0]))
-                               | (i_dsp_rob_vld[3] & (j == i_dsp_rob_rob_id_3[`ROB_ID_WIDTH - 2 : 0])));
+    for(done_idx = 0; done_idx < 128; done_idx = done_idx + 1) begin
+        assign rob_done_set[done_idx] = (i_exu_rob_vld_0 & (done_idx == i_exu_rob_rob_id_0[`ROB_ID_WIDTH - 2 : 0]))
+                                      | (i_exu_rob_vld_1 & (done_idx == i_exu_rob_rob_id_1[`ROB_ID_WIDTH - 2 : 0]))
+                                      | (i_exu_rob_vld_2 & (done_idx == i_exu_rob_rob_id_2[`ROB_ID_WIDTH - 2 : 0]))
+                                      | (i_exu_rob_vld_3 & (done_idx == i_exu_rob_rob_id_3[`ROB_ID_WIDTH - 2 : 0]));
+        assign rob_done_clr[done_idx] = (i_csr_trap_flush
+                                      | (i_dsp_rob_vld[0] & (done_idx == i_dsp_rob_rob_id_0[`ROB_ID_WIDTH - 2 : 0]))
+                                      | (i_dsp_rob_vld[1] & (done_idx == i_dsp_rob_rob_id_1[`ROB_ID_WIDTH - 2 : 0]))
+                                      | (i_dsp_rob_vld[2] & (done_idx == i_dsp_rob_rob_id_2[`ROB_ID_WIDTH - 2 : 0]))
+                                      | (i_dsp_rob_vld[3] & (done_idx == i_dsp_rob_rob_id_3[`ROB_ID_WIDTH - 2 : 0])));
     end
 endgenerate
 
 wire [127 : 0] rob_done_nxt = ((rob_done_r | rob_done_set) & (~rob_done_clr));
 
-wire rob_done_ena = (rob_req | (i_exu_rob_vld_0 | i_exu_rob_vld_1 | i_exu_rob_vld_2 | i_exu_rob_vld_3));
-
+wire rob_done_ena = (rob_vld | (i_exu_rob_vld_0 | i_exu_rob_vld_1 | i_exu_rob_vld_2 | i_exu_rob_vld_3));
 gnrl_dfflr #( 
     .DATA_WIDTH   (128),
     .INITIAL_VALUE(0)
@@ -419,57 +423,80 @@ assign o_rob_exu_addr_2 = rob_addr_r[i_exu_rob_rob_id_addr_2[`ROB_ID_WIDTH - 2 :
 wire [2 * `CORE_PC_WIDTH - 1 : 0] rob_rob_addr = rob_addr_r[rob_ret_ptr[`ROB_ID_WIDTH - 2 : 0]];
 assign o_rob_csr_instr = rob_inst_info_r[rob_ret_ptr[`ROB_ID_WIDTH - 2 : 0]][`INSTR_WIDTH - 1 : 0];
 
+
 //
 wire [`ROB_ID_WIDTH - 1 : 0] rob_alloc_ptr, rob_ret_ptr;
 
 assign rob_alloc_ptr = i_dsp_rob_dsp_id;
 assign rob_ret_ptr = i_dsp_rob_ret_id;
 
-wire [`ROB_ID_WIDTH - 2 : 0] rob_ret_sel_0 = rob_ret_ptr[`ROB_ID_WIDTH - 2 : 0];
-wire [`ROB_ID_WIDTH - 2 : 0] rob_ret_sel_1 = (rob_ret_ptr[`ROB_ID_WIDTH - 2 : 0] + (`ROB_ID_WIDTH - 1)'d1);
-wire [`ROB_ID_WIDTH - 2 : 0] rob_ret_sel_2 = (rob_ret_ptr[`ROB_ID_WIDTH - 2 : 0] + (`ROB_ID_WIDTH - 1)'d2);
-wire [`ROB_ID_WIDTH - 2 : 0] rob_ret_sel_3 = (rob_ret_ptr[`ROB_ID_WIDTH - 2 : 0] + (`ROB_ID_WIDTH - 1)'d3);
+wire [`ROB_ID_WIDTH - 1 : 0] rob_ret_sel_0 = rob_ret_ptr;
+wire [`ROB_ID_WIDTH - 1 : 0] rob_ret_sel_1 = (rob_ret_ptr + `ROB_ID_WIDTH'd1);
+wire [`ROB_ID_WIDTH - 1 : 0] rob_ret_sel_2 = (rob_ret_ptr + `ROB_ID_WIDTH'd2);
+wire [`ROB_ID_WIDTH - 1 : 0] rob_ret_sel_3 = (rob_ret_ptr + `ROB_ID_WIDTH'd3);
+
+wire [`ROB_INST_INFO_WIDTH - 1 : 0] rob_sel_inst_info_0 = rob_inst_info_r[rob_ret_sel_0[`ROB_ID_WIDTH - 2 : 0]];
+wire [`ROB_INST_INFO_WIDTH - 1 : 0] rob_sel_inst_info_1 = rob_inst_info_r[rob_ret_sel_1[`ROB_ID_WIDTH - 2 : 0]];
+wire [`ROB_INST_INFO_WIDTH - 1 : 0] rob_sel_inst_info_2 = rob_inst_info_r[rob_ret_sel_2[`ROB_ID_WIDTH - 2 : 0]];
+wire [`ROB_INST_INFO_WIDTH - 1 : 0] rob_sel_inst_info_3 = rob_inst_info_r[rob_ret_sel_3[`ROB_ID_WIDTH - 2 : 0]];
+
+wire [`DECINFO_WIDTH - 1 : 0] rob_sel_inst_decinfo_0 = rob_sel_inst_info_0[`ROB_INST_INFO_DECINFO];
+wire rob_inst_is_alu_0 = (rob_sel_inst_decinfo_0[`DECINFO_EXEC_UNIT] == `DECINFO_ALU);
+wire rob_inst_is_bjp_0 = (rob_sel_inst_decinfo_0[`DECINFO_EXEC_UNIT] == `DECINFO_BJP);
+
+wire [`DECINFO_WIDTH - 1 : 0] rob_sel_inst_decinfo_1 = rob_sel_inst_info_1[`ROB_INST_INFO_DECINFO];
+wire rob_inst_is_alu_1 = (rob_sel_inst_decinfo_1[`DECINFO_EXEC_UNIT] == `DECINFO_ALU);
+wire rob_inst_is_bjp_1 = (rob_sel_inst_decinfo_1[`DECINFO_EXEC_UNIT] == `DECINFO_BJP);
+
+wire [`DECINFO_WIDTH - 1 : 0] rob_sel_inst_decinfo_2 = rob_sel_inst_info_2[`ROB_INST_INFO_DECINFO];
+wire rob_inst_is_alu_2 = (rob_sel_inst_decinfo_2[`DECINFO_EXEC_UNIT] == `DECINFO_ALU);
+wire rob_inst_is_bjp_2 = (rob_sel_inst_decinfo_2[`DECINFO_EXEC_UNIT] == `DECINFO_BJP);
+
+wire [`DECINFO_WIDTH - 1 : 0] rob_sel_inst_decinfo_3 = rob_sel_inst_info_3[`ROB_INST_INFO_DECINFO];
+wire rob_inst_is_alu_3 = (rob_sel_inst_decinfo_3[`DECINFO_EXEC_UNIT] == `DECINFO_ALU);
+wire rob_inst_is_bjp_3 = (rob_sel_inst_decinfo_3[`DECINFO_EXEC_UNIT] == `DECINFO_BJP);
+
 
 wire [3 : 0] rob_ret_constraint;
-assign rob_ret_constraint[3] = (((rob_inst_info_r[rob_ret_sel_3][`ROB_INST_INFO_DECINFO_EXEC_UNIT] == `UOPINFO_ALU) 
-                             &   (rob_inst_info_r[rob_ret_sel_3][`ROB_INST_INFO_DECINFO_ALU_ECALL] 
-                             |    rob_inst_info_r[rob_ret_sel_3][`ROB_INST_INFO_DECINFO_ALU_EBRK] 
-                             |    rob_inst_info_r[rob_ret_sel_3][`ROB_INST_INFO_DECINFO_ALU_WFI] ))
-                             |  ((rob_inst_info_r[rob_ret_sel_3][`ROB_INST_INFO_DECINFO_EXEC_UNIT] == `UOPINFO_BJP) 
-                             & (rob_inst_info_r[rob_ret_sel_3][`ROB_INST_INFO_DECINFO_BJP_MRET]  
-                             | rob_inst_info_r[rob_ret_sel_3][`ROB_INST_INFO_DECINFO_BJP_SRET] 
-                             | rob_inst_info_r[rob_ret_sel_3][`ROB_INST_INFO_DECINFO_BJP_URET]))
-                             |    rob_inst_info_r[rob_ret_sel_3][`ROB_INST_INFO_DECINFO_ILGL]);
-assign rob_ret_constraint[2] = (((rob_inst_info_r[rob_ret_sel_2][`ROB_INST_INFO_DECINFO_EXEC_UNIT] == `UOPINFO_ALU) 
-                             &   (rob_inst_info_r[rob_ret_sel_2][`ROB_INST_INFO_DECINFO_ALU_ECALL] 
-                             |    rob_inst_info_r[rob_ret_sel_2][`ROB_INST_INFO_DECINFO_ALU_EBRK]
-                             |    rob_inst_info_r[rob_ret_sel_2][`ROB_INST_INFO_DECINFO_ALU_WFI]))
-                             |  ((rob_inst_info_r[rob_ret_sel_2][`ROB_INST_INFO_DECINFO_EXEC_UNIT] == `UOPINFO_BJP)
-                             &   (rob_inst_info_r[rob_ret_sel_2][`ROB_INST_INFO_DECINFO_BJP_MRET]
-                             |    rob_inst_info_r[rob_ret_sel_2][`ROB_INST_INFO_DECINFO_BJP_SRET]
-                             |    rob_inst_info_r[rob_ret_sel_2][`ROB_INST_INFO_DECINFO_BJP_URET]))
-                             |    rob_inst_info_r[rob_ret_sel_2][`ROB_INST_INFO_DECINFO_ILGL]);
-assign rob_ret_constraint[1] = (((rob_inst_info_r[rob_ret_sel_1][`ROB_INST_INFO_DECINFO_EXEC_UNIT] == `UOPINFO_ALU) 
-                             &   (rob_inst_info_r[rob_ret_sel_1][`ROB_INST_INFO_DECINFO_ALU_ECALL] 
-                             |    rob_inst_info_r[rob_ret_sel_1][`ROB_INST_INFO_DECINFO_ALU_EBRK]
-                             |    rob_inst_info_r[rob_ret_sel_1][`ROB_INST_INFO_DECINFO_ALU_WFI]))
-                             |  ((rob_inst_info_r[rob_ret_sel_1][`ROB_INST_INFO_DECINFO_EXEC_UNIT] == `UOPINFO_BJP)
-                             &   (rob_inst_info_r[rob_ret_sel_1][`ROB_INST_INFO_DECINFO_BJP_MRET]
-                             |    rob_inst_info_r[rob_ret_sel_1][`ROB_INST_INFO_DECINFO_BJP_SRET]
-                             |    rob_inst_info_r[rob_ret_sel_1][`ROB_INST_INFO_DECINFO_BJP_URET]))
-                             |    rob_inst_info_r[rob_ret_sel_1][`ROB_INST_INFO_DECINFO_ILGL]);
-assign rob_ret_constraint[0] = (((rob_inst_info_r[rob_ret_sel_0][`ROB_INST_INFO_DECINFO_EXEC_UNIT] == `UOPINFO_ALU) 
-                             &   (rob_inst_info_r[rob_ret_sel_0][`ROB_INST_INFO_DECINFO_ALU_ECALL] 
-                             |    rob_inst_info_r[rob_ret_sel_0][`ROB_INST_INFO_DECINFO_ALU_EBRK]
-                             |    rob_inst_info_r[rob_ret_sel_0][`ROB_INST_INFO_DECINFO_ALU_WFI]))
-                             |  ((rob_inst_info_r[rob_ret_sel_0][`ROB_INST_INFO_DECINFO_EXEC_UNIT] == `UOPINFO_BJP)
-                             &   (rob_inst_info_r[rob_ret_sel_0][`ROB_INST_INFO_DECINFO_BJP_MRET]
-                             |    rob_inst_info_r[rob_ret_sel_0][`ROB_INST_INFO_DECINFO_BJP_SRET]
-                             |    rob_inst_info_r[rob_ret_sel_0][`ROB_INST_INFO_DECINFO_BJP_URET]))
-                             |    rob_inst_info_r[rob_ret_sel_0][`ROB_INST_INFO_DECINFO_ILGL]);
+assign rob_ret_constraint[3] = ((rob_inst_is_alu_3 
+                             &  (rob_sel_inst_decinfo_3[`DECINFO_ALU_ECALL]
+                             |   rob_sel_inst_decinfo_3[`DECINFO_ALU_EBRK]
+                             |   rob_sel_inst_decinfo_3[`DECINFO_ALU_WFI])) 
+                             | (rob_inst_is_bjp_3
+                             &  (rob_sel_inst_decinfo_3[`DECINFO_BJP_MRET]
+                             |   rob_sel_inst_decinfo_3[`DECINFO_BJP_SRET]
+                             |   rob_sel_inst_decinfo_3[`DECINFO_BJP_URET]))
+                             |   rob_sel_inst_decinfo_3[`DECINFO_ILGL]); 
+assign rob_ret_constraint[2] = ((rob_inst_is_alu_2 
+                             &  (rob_sel_inst_decinfo_2[`DECINFO_ALU_ECALL]
+                             |   rob_sel_inst_decinfo_2[`DECINFO_ALU_EBRK]
+                             |   rob_sel_inst_decinfo_2[`DECINFO_ALU_WFI])) 
+                             | (rob_inst_is_bjp_2
+                             &  (rob_sel_inst_decinfo_2[`DECINFO_BJP_MRET]
+                             |   rob_sel_inst_decinfo_2[`DECINFO_BJP_SRET]
+                             |   rob_sel_inst_decinfo_2[`DECINFO_BJP_URET]))
+                             |   rob_sel_inst_decinfo_2[`DECINFO_ILGL]);
+assign rob_ret_constraint[1] = ((rob_inst_is_alu_1 
+                             &  (rob_sel_inst_decinfo_1[`DECINFO_ALU_ECALL]
+                             |   rob_sel_inst_decinfo_1[`DECINFO_ALU_EBRK]
+                             |   rob_sel_inst_decinfo_1[`DECINFO_ALU_WFI])) 
+                             | (rob_inst_is_bjp_1
+                             &  (rob_sel_inst_decinfo_1[`DECINFO_BJP_MRET]
+                             |   rob_sel_inst_decinfo_1[`DECINFO_BJP_SRET]
+                             |   rob_sel_inst_decinfo_1[`DECINFO_BJP_URET]))
+                             |   rob_sel_inst_decinfo_1[`DECINFO_ILGL]);
+assign rob_ret_constraint[0] = ((rob_inst_is_alu_0 
+                             &  (rob_sel_inst_decinfo_0[`DECINFO_ALU_ECALL]
+                             |   rob_sel_inst_decinfo_0[`DECINFO_ALU_EBRK]
+                             |   rob_sel_inst_decinfo_0[`DECINFO_ALU_WFI])) 
+                             | (rob_inst_is_bjp_0
+                             &  (rob_sel_inst_decinfo_0[`DECINFO_BJP_MRET]
+                             |   rob_sel_inst_decinfo_0[`DECINFO_BJP_SRET]
+                             |   rob_sel_inst_decinfo_0[`DECINFO_BJP_URET]))
+                             |   rob_sel_inst_decinfo_0[`DECINFO_ILGL]);
 
 //
-wire rob_ret_rdy_0 = (rob_vld_r[rob_ret_sel_0] & rob_done_r[rob_ret_sel_0] & (~(|rob_excp_r[rob_ret_sel_0])));
+wire rob_ret_rdy_0 = (rob_vld_r[rob_ret_sel_0[`ROB_ID_WIDTH - 2 : 0]] & rob_done_r[rob_ret_sel_0[`ROB_ID_WIDTH - 2 : 0]] & (~(|rob_excp_r[rob_ret_sel_0[`ROB_ID_WIDTH - 2 : 0]])));
 wire rob_ret_rdy_1 = (rob_ret_rdy_0 & (~(|rob_ret_constraint[1 : 0]))
                    &  rob_vld_r[rob_ret_sel_1]
                    &  rob_done_r[rob_ret_sel_1]
@@ -487,24 +514,25 @@ assign o_rob_csr_trap_addr = rob_rob_addr[`CORE_PC_WIDTH - 1 : 0];
 
 //
 assign o_rob_ren_ret_vld = { 
-                                (rob_ret_rdy_3 & (rob_inst_info_r[rob_ret_sel_3][`ROB_INST_INFO_DST_VLD]) & (~rob_sta_rec_r))
-                            ,   (rob_ret_rdy_2 & (rob_inst_info_r[rob_ret_sel_2][`ROB_INST_INFO_DST_VLD]) & (~rob_sta_rec_r))
-                            ,   (rob_ret_rdy_1 & (rob_inst_info_r[rob_ret_sel_1][`ROB_INST_INFO_DST_VLD]) & (~rob_sta_rec_r))
-                            ,   (rob_ret_rdy_0 & (rob_inst_info_r[rob_ret_sel_0][`ROB_INST_INFO_DST_VLD]) & (~rob_sta_rec_r))
+                                (rob_ret_rdy_3 & (rob_sel_inst_info_3[`ROB_INST_INFO_DST_VLD]) & (~rob_sta_rec_r))
+                            ,   (rob_ret_rdy_2 & (rob_sel_inst_info_2[`ROB_INST_INFO_DST_VLD]) & (~rob_sta_rec_r))
+                            ,   (rob_ret_rdy_1 & (rob_sel_inst_info_1[`ROB_INST_INFO_DST_VLD]) & (~rob_sta_rec_r))
+                            ,   (rob_ret_rdy_0 & (rob_sel_inst_info_0[`ROB_INST_INFO_DST_VLD]) & (~rob_sta_rec_r))
                         };
 
-assign o_rob_ren_ret_dst_vld_0  = rob_inst_info_r[rob_ret_sel_0][`ROB_INST_INFO_DST_VLD];
-assign o_rob_ren_ret_arf_code_0 = rob_inst_info_r[rob_ret_sel_0][`ROB_INST_INFO_DST_ARF_CODE];
-assign o_rob_ren_ret_prf_code_0 = rob_inst_info_r[rob_ret_sel_0][`ROB_INST_INFO_DST_PRF_CODE];
-assign o_rob_ren_ret_dst_vld_1  = rob_inst_info_r[rob_ret_sel_1][`ROB_INST_INFO_DST_VLD];
-assign o_rob_ren_ret_arf_code_1 = rob_inst_info_r[rob_ret_sel_1][`ROB_INST_INFO_DST_ARF_CODE];
-assign o_rob_ren_ret_prf_code_1 = rob_inst_info_r[rob_ret_sel_1][`ROB_INST_INFO_DST_PRF_CODE];
-assign o_rob_ren_ret_dst_vld_2  = rob_inst_info_r[rob_ret_sel_2][`ROB_INST_INFO_DST_VLD];
-assign o_rob_ren_ret_arf_code_2 = rob_inst_info_r[rob_ret_sel_2][`ROB_INST_INFO_DST_ARF_CODE];
-assign o_rob_ren_ret_prf_code_2 = rob_inst_info_r[rob_ret_sel_2][`ROB_INST_INFO_DST_PRF_CODE];
-assign o_rob_ren_ret_dst_vld_3  = rob_inst_info_r[rob_ret_sel_3][`ROB_INST_INFO_DST_VLD];
-assign o_rob_ren_ret_arf_code_3 = rob_inst_info_r[rob_ret_sel_3][`ROB_INST_INFO_DST_ARF_CODE];
-assign o_rob_ren_ret_prf_code_3 = rob_inst_info_r[rob_ret_sel_3][`ROB_INST_INFO_DST_PRF_CODE];
+assign o_rob_ren_ret_dst_vld_0  = rob_sel_inst_info_0[`ROB_INST_INFO_DST_VLD];
+assign o_rob_ren_ret_arf_code_0 = rob_sel_inst_info_0[`ROB_INST_INFO_DST_ARF];
+assign o_rob_ren_ret_prf_code_0 = rob_sel_inst_info_0[`ROB_INST_INFO_DST_PRF];
+assign o_rob_ren_ret_dst_vld_1  = rob_sel_inst_info_1[`ROB_INST_INFO_DST_VLD];
+assign o_rob_ren_ret_arf_code_1 = rob_sel_inst_info_1[`ROB_INST_INFO_DST_ARF];
+assign o_rob_ren_ret_prf_code_1 = rob_sel_inst_info_1[`ROB_INST_INFO_DST_PRF];
+assign o_rob_ren_ret_dst_vld_2  = rob_sel_inst_info_2[`ROB_INST_INFO_DST_VLD];
+assign o_rob_ren_ret_arf_code_2 = rob_sel_inst_info_2[`ROB_INST_INFO_DST_ARF];
+assign o_rob_ren_ret_prf_code_2 = rob_sel_inst_info_2[`ROB_INST_INFO_DST_PRF];
+assign o_rob_ren_ret_dst_vld_3  = rob_sel_inst_info_3[`ROB_INST_INFO_DST_VLD];
+assign o_rob_ren_ret_arf_code_3 = rob_sel_inst_info_3[`ROB_INST_INFO_DST_ARF];
+assign o_rob_ren_ret_prf_code_3 = rob_sel_inst_info_3[`ROB_INST_INFO_DST_PRF];
+
 
 //
 wire rob_sta_rec_r;
@@ -537,11 +565,18 @@ wire [`ROB_ID_WIDTH - 1 : 0] rob_rec_sel_1 = (rob_rec_ptr_r + `ROB_ID_WIDTH'd1);
 wire [`ROB_ID_WIDTH - 1 : 0] rob_rec_sel_2 = (rob_rec_ptr_r + `ROB_ID_WIDTH'd2);
 wire [`ROB_ID_WIDTH - 1 : 0] rob_rec_sel_3 = (rob_rec_ptr_r + `ROB_ID_WIDTH'd3);
 
+wire [`ROB_INST_INFO_WIDTH - 1 : 0] rob_rec_sel_inst_info_0 = rob_inst_info_r[rob_rec_sel_0[`ROB_ID_WIDTH - 2 : 0]];
+wire [`ROB_INST_INFO_WIDTH - 1 : 0] rob_rec_sel_inst_info_1 = rob_inst_info_r[rob_rec_sel_1[`ROB_ID_WIDTH - 2 : 0]];
+wire [`ROB_INST_INFO_WIDTH - 1 : 0] rob_rec_sel_inst_info_2 = rob_inst_info_r[rob_rec_sel_2[`ROB_ID_WIDTH - 2 : 0]];
+wire [`ROB_INST_INFO_WIDTH - 1 : 0] rob_rec_sel_inst_info_3 = rob_inst_info_r[rob_rec_sel_3[`ROB_ID_WIDTH - 2 : 0]];
+
+
+
 assign rob_rec_vec_nxt = i_exu_mis_ls_flush ? 32'd0
-                       : ({32{(o_rob_ren_rec_vld[0] & (~rob_inst_info_r[rob_rec_sel_0[`ROB_ID_WIDTH - 2 : 0]][`ROB_INST_INFO_DST_ARF_CODE]))}} & func_vec32(rob_inst_info_r[rob_rec_sel_0[`ROB_ID_WIDTH - 2 : 0]][`ROB_INST_INFO_DST_ARF_CODE]))
-                       | ({32{(o_rob_ren_rec_vld[1] & (~rob_inst_info_r[rob_rec_sel_1[`ROB_ID_WIDTH - 2 : 0]][`ROB_INST_INFO_DST_ARF_CODE]))}} & func_vec32(rob_inst_info_r[rob_rec_sel_1[`ROB_ID_WIDTH - 2 : 0]][`ROB_INST_INFO_DST_ARF_CODE]))
-                       | ({32{(o_rob_ren_rec_vld[2] & (~rob_inst_info_r[rob_rec_sel_2[`ROB_ID_WIDTH - 2 : 0]][`ROB_INST_INFO_DST_ARF_CODE]))}} & func_vec32(rob_inst_info_r[rob_rec_sel_2[`ROB_ID_WIDTH - 2 : 0]][`ROB_INST_INFO_DST_ARF_CODE]))
-                       | ({32{(o_rob_ren_rec_vld[3] & (~rob_inst_info_r[rob_rec_sel_3[`ROB_ID_WIDTH - 2 : 0]][`ROB_INST_INFO_DST_ARF_CODE]))}} & func_vec32(rob_inst_info_r[rob_rec_sel_3[`ROB_ID_WIDTH - 2 : 0]][`ROB_INST_INFO_DST_ARF_CODE]));
+                       : ({32{(o_rob_ren_rec_vld[0] & (~rob_rec_sel_inst_info_0[`ROB_INST_INFO_DST_ARF]))}} & func_vec32(rob_rec_sel_inst_info_0[`ROB_INST_INFO_DST_ARF]))
+                       | ({32{(o_rob_ren_rec_vld[1] & (~rob_rec_sel_inst_info_1[`ROB_INST_INFO_DST_ARF]))}} & func_vec32(rob_rec_sel_inst_info_1[`ROB_INST_INFO_DST_ARF]))
+                       | ({32{(o_rob_ren_rec_vld[2] & (~rob_rec_sel_inst_info_2[`ROB_INST_INFO_DST_ARF]))}} & func_vec32(rob_rec_sel_inst_info_2[`ROB_INST_INFO_DST_ARF]))
+                       | ({32{(o_rob_ren_rec_vld[3] & (~rob_rec_sel_inst_info_3[`ROB_INST_INFO_DST_ARF]))}} & func_vec32(rob_rec_sel_inst_info_3[`ROB_INST_INFO_DST_ARF]));
 
 gnrl_dffl #( 
     .DATA_WIDTH(32)
@@ -552,79 +587,80 @@ wire rob_rec_done = (~func_rob_old(rob_rec_ptr_r, rob_alloc_ptr));
 
 //
 assign o_rob_ren_rec_vld = {
-                                ((func_rob_old(rob_rec_sel_3, rob_alloc_ptr) & rob_vld_r[rob_rec_sel_3[`ROB_ID_WIDTH - 2 : 0]] & rob_inst_info_r[rob_rec_sel_3[`ROB_ID_WIDTH - 2 : 0]][`ROB_INST_INFO_DST_VLD] & (~rob_rec_vec_r[rob_inst_info_r[rob_rec_sel_3[`ROB_ID_WIDTH - 2 : 0]][`ROB_INST_INFO_DST_ARF_CODE]]) & rob_sta_rec_r))
-                            ,   ((func_rob_old(rob_rec_sel_2, rob_alloc_ptr) & rob_vld_r[rob_rec_sel_2[`ROB_ID_WIDTH - 2 : 0]] & rob_inst_info_r[rob_rec_sel_2[`ROB_ID_WIDTH - 2 : 0]][`ROB_INST_INFO_DST_VLD] & (~rob_rec_vec_r[rob_inst_info_r[rob_rec_sel_2[`ROB_ID_WIDTH - 2 : 0]][`ROB_INST_INFO_DST_ARF_CODE]]) & rob_sta_rec_r))
-                            ,   ((func_rob_old(rob_rec_sel_1, rob_alloc_ptr) & rob_vld_r[rob_rec_sel_1[`ROB_ID_WIDTH - 2 : 0]] & rob_inst_info_r[rob_rec_sel_1[`ROB_ID_WIDTH - 2 : 0]][`ROB_INST_INFO_DST_VLD] & (~rob_rec_vec_r[rob_inst_info_r[rob_rec_sel_1[`ROB_ID_WIDTH - 2 : 0]][`ROB_INST_INFO_DST_ARF_CODE]]) & rob_sta_rec_r))
-                            ,   ((func_rob_old(rob_rec_sel_0, rob_alloc_ptr) & rob_vld_r[rob_rec_sel_0[`ROB_ID_WIDTH - 2 : 0]] & rob_inst_info_r[rob_rec_sel_0[`ROB_ID_WIDTH - 2 : 0]][`ROB_INST_INFO_DST_VLD] & (~rob_rec_vec_r[rob_inst_info_r[rob_rec_sel_0[`ROB_ID_WIDTH - 2 : 0]][`ROB_INST_INFO_DST_ARF_CODE]]) & rob_sta_rec_r))
-                            };
+                                ((func_rob_old(rob_rec_sel_3, rob_alloc_ptr) & rob_vld_r[rob_rec_sel_3[`ROB_ID_WIDTH - 2 : 0]] & rob_rec_sel_inst_info_3[`ROB_INST_INFO_DST_VLD] & (~rob_rec_sel_inst_info_3[`ROB_INST_INFO_DST_ARF]]) & rob_sta_rec_r))
+                            ,   ((func_rob_old(rob_rec_sel_2, rob_alloc_ptr) & rob_vld_r[rob_rec_sel_2[`ROB_ID_WIDTH - 2 : 0]] & rob_rec_sel_inst_info_2[`ROB_INST_INFO_DST_VLD] & (~rob_rec_sel_inst_info_2[`ROB_INST_INFO_DST_ARF]]) & rob_sta_rec_r))
+                            ,   ((func_rob_old(rob_rec_sel_1, rob_alloc_ptr) & rob_vld_r[rob_rec_sel_1[`ROB_ID_WIDTH - 2 : 0]] & rob_rec_sel_inst_info_1[`ROB_INST_INFO_DST_VLD] & (~rob_rec_sel_inst_info_1[`ROB_INST_INFO_DST_ARF]]) & rob_sta_rec_r))
+                            ,   ((func_rob_old(rob_rec_sel_0, rob_alloc_ptr) & rob_vld_r[rob_rec_sel_0[`ROB_ID_WIDTH - 2 : 0]] & rob_rec_sel_inst_info_0[`ROB_INST_INFO_DST_VLD] & (~rob_rec_sel_inst_info_0[`ROB_INST_INFO_DST_ARF]]) & rob_sta_rec_r))
+                        };
 
-assign o_rob_ren_rec_arf_code_0 = rob_inst_info_r[rob_rec_sel_0[`ROB_ID_WIDTH - 2 : 0]][`ROB_INST_INFO_DST_ARF_CODE];
-assign o_rob_ren_rec_prf_code_0 = rob_inst_info_r[rob_rec_sel_0[`ROB_ID_WIDTH - 2 : 0]][`ROB_INST_INFO_DST_PPRF_CODE];
-assign o_rob_ren_rec_arf_code_1 = rob_inst_info_r[rob_rec_sel_1[`ROB_ID_WIDTH - 2 : 0]][`ROB_INST_INFO_DST_ARF_CODE];
-assign o_rob_ren_rec_prf_code_1 = rob_inst_info_r[rob_rec_sel_1[`ROB_ID_WIDTH - 2 : 0]][`ROB_INST_INFO_DST_PPRF_CODE];
-assign o_rob_ren_rec_arf_code_2 = rob_inst_info_r[rob_rec_sel_2[`ROB_ID_WIDTH - 2 : 0]][`ROB_INST_INFO_DST_ARF_CODE];
-assign o_rob_ren_rec_prf_code_2 = rob_inst_info_r[rob_rec_sel_2[`ROB_ID_WIDTH - 2 : 0]][`ROB_INST_INFO_DST_PPRF_CODE];
-assign o_rob_ren_rec_arf_code_3 = rob_inst_info_r[rob_rec_sel_3[`ROB_ID_WIDTH - 2 : 0]][`ROB_INST_INFO_DST_ARF_CODE];
-assign o_rob_ren_rec_prf_code_3 = rob_inst_info_r[rob_rec_sel_3[`ROB_ID_WIDTH - 2 : 0]][`ROB_INST_INFO_DST_PPRF_CODE];
-
-assign o_rob_ren_mis_vld = {
-                                ((func_rob_old(rob_rec_sel_3, rob_alloc_ptr)) & rob_inst_info_r[rob_rec_sel_3[`ROB_ID_WIDTH - 2 : 0]][`ROB_INST_INFO_DST_VLD] & rob_sta_rec_r)
-                            ,   ((func_rob_old(rob_rec_sel_2, rob_alloc_ptr)) & rob_inst_info_r[rob_rec_sel_2[`ROB_ID_WIDTH - 2 : 0]][`ROB_INST_INFO_DST_VLD] & rob_sta_rec_r)
-                            ,   ((func_rob_old(rob_rec_sel_1, rob_alloc_ptr)) & rob_inst_info_r[rob_rec_sel_1[`ROB_ID_WIDTH - 2 : 0]][`ROB_INST_INFO_DST_VLD] & rob_sta_rec_r)
-                            ,   ((func_rob_old(rob_rec_sel_0, rob_alloc_ptr)) & rob_inst_info_r[rob_rec_sel_0[`ROB_ID_WIDTH - 2 : 0]][`ROB_INST_INFO_DST_VLD] & rob_sta_rec_r)
-                            };
-
-assign o_rob_ren_mis_arf_code_0 = o_rob_ren_rec_arf_code_0;
-assign o_rob_ren_mis_prf_code_0 = rob_inst_info_r[rob_rec_sel_0[`ROB_ID_WIDTH - 2 : 0]][`ROB_INST_INFO_DST_PRF_CODE];
-assign o_rob_ren_mis_arf_code_1 = o_rob_ren_rec_arf_code_1;
-assign o_rob_ren_mis_prf_code_1 = rob_inst_info_r[rob_rec_sel_1[`ROB_ID_WIDTH - 2 : 0]][`ROB_INST_INFO_DST_PRF_CODE];
-assign o_rob_ren_mis_arf_code_2 = o_rob_ren_rec_arf_code_2;
-assign o_rob_ren_mis_prf_code_2 = rob_inst_info_r[rob_rec_sel_2[`ROB_ID_WIDTH - 2 : 0]][`ROB_INST_INFO_DST_PRF_CODE];
-assign o_rob_ren_mis_arf_code_3 = o_rob_ren_rec_arf_code_3;
-assign o_rob_ren_mis_prf_code_3 = rob_inst_info_r[rob_rec_sel_3[`ROB_ID_WIDTH - 2 : 0]][`ROB_INST_INFO_DST_PRF_CODE];
+assign o_rob_ren_rec_arf_code_0 = rob_rec_sel_inst_info_0[`ROB_INST_INFO_DST_ARF];
+assign o_rob_ren_rec_prf_code_0 = rob_rec_sel_inst_info_0[`ROB_INST_INFO_DST_PPRF];
+assign o_rob_ren_rec_arf_code_1 = rob_rec_sel_inst_info_1[`ROB_INST_INFO_DST_ARF];
+assign o_rob_ren_rec_prf_code_1 = rob_rec_sel_inst_info_1[`ROB_INST_INFO_DST_PPRF];
+assign o_rob_ren_rec_arf_code_2 = rob_rec_sel_inst_info_2[`ROB_INST_INFO_DST_ARF];
+assign o_rob_ren_rec_prf_code_2 = rob_rec_sel_inst_info_2[`ROB_INST_INFO_DST_PPRF];
+assign o_rob_ren_rec_arf_code_3 = rob_rec_sel_inst_info_3[`ROB_INST_INFO_DST_ARF];
+assign o_rob_ren_rec_prf_code_3 = rob_rec_sel_inst_info_3[`ROB_INST_INFO_DST_PPRF];
 
 //
-assign o_rob_dsp_mis_ld_vld = rob_inst_info_r[i_exu_mis_rob_id[`ROB_ID_WIDTH - 2 : 0]][`ROB_INST_INFO_LD_VLD];
-assign o_rob_dsp_mis_ld_id  = rob_inst_info_r[i_exu_mis_rob_id[`ROB_ID_WIDTH - 2 : 0]][`ROB_INST_INFO_LD_ID ];
-assign o_rob_dsp_mis_st_vld = rob_inst_info_r[i_exu_mis_rob_id[`ROB_ID_WIDTH - 2 : 0]][`ROB_INST_INFO_ST_VLD];
-assign o_rob_dsp_mis_st_id  = rob_inst_info_r[i_exu_mis_rob_id[`ROB_ID_WIDTH - 2 : 0]][`ROB_INST_INFO_ST_ID ];
+assign o_rob_ren_mis_vld = {
+                                ((func_rob_old(rob_rec_sel_3, rob_alloc_ptr)) & rob_rec_sel_inst_info_3[`ROB_INST_INFO_DST_VLD] & rob_sta_rec_r)
+                            ,   ((func_rob_old(rob_rec_sel_2, rob_alloc_ptr)) & rob_rec_sel_inst_info_2[`ROB_INST_INFO_DST_VLD] & rob_sta_rec_r)
+                            ,   ((func_rob_old(rob_rec_sel_1, rob_alloc_ptr)) & rob_rec_sel_inst_info_1[`ROB_INST_INFO_DST_VLD] & rob_sta_rec_r)
+                            ,   ((func_rob_old(rob_rec_sel_0, rob_alloc_ptr)) & rob_rec_sel_inst_info_0[`ROB_INST_INFO_DST_VLD] & rob_sta_rec_r) 
+                        };
+
+assign o_rob_ren_mis_arf_code_0 = o_rob_ren_rec_arf_code_0;
+assign o_rob_ren_mis_prf_code_0 = rob_rec_sel_inst_info_0[`ROB_INST_INFO_DST_PRF];
+assign o_rob_ren_mis_arf_code_1 = o_rob_ren_rec_arf_code_1;
+assign o_rob_ren_mis_prf_code_1 = rob_rec_sel_inst_info_1[`ROB_INST_INFO_DST_PRF];
+assign o_rob_ren_mis_arf_code_2 = o_rob_ren_rec_arf_code_2;
+assign o_rob_ren_mis_prf_code_2 = rob_rec_sel_inst_info_2[`ROB_INST_INFO_DST_PRF];
+assign o_rob_ren_mis_arf_code_3 = o_rob_ren_rec_arf_code_3;
+assign o_rob_ren_mis_prf_code_3 = rob_rec_sel_inst_info_3[`ROB_INST_INFO_DST_PRF];
+
+//
+assign o_rob_dsp_mis_ld_vld = rob_inst_info_r[i_exu_mis_rob_id[`ROB_ID_WIDTH - 2 : 0]][`ROB_INST_INFO_LBUFF_VLD];
+assign o_rob_dsp_mis_ld_id  = rob_inst_info_r[i_exu_mis_rob_id[`ROB_ID_WIDTH - 2 : 0]][`ROB_INST_INFO_LBUFF_ID ];
+assign o_rob_dsp_mis_st_vld = rob_inst_info_r[i_exu_mis_rob_id[`ROB_ID_WIDTH - 2 : 0]][`ROB_INST_INFO_SBUFF_VLD];
+assign o_rob_dsp_mis_st_id  = rob_inst_info_r[i_exu_mis_rob_id[`ROB_ID_WIDTH - 2 : 0]][`ROB_INST_INFO_SBUFF_ID ];
 
 assign o_rob_exu_ls_addr = rob_addr_r[i_exu_ls_rob_id[`ROB_ID_WIDTH - 2 : 0]][`CORE_PC_WIDTH - 1 : 0];
 
 assign o_rob_dsp_ret_vld      = o_rob_ren_ret_vld;
 assign o_rob_dsp_ret_rob_id_0 = rob_ret_sel_0;
-assign o_rob_dsp_ret_ld_vld_0 = rob_inst_info_r[rob_ret_sel_0[`ROB_ID_WIDTH - 2 : 0]][`ROB_INST_INFO_LD_VLD];
-assign o_rob_dsp_ret_ld_id_0  = rob_inst_info_r[rob_ret_sel_0[`ROB_ID_WIDTH - 2 : 0]][`ROB_INST_INFO_LD_ID];
-assign o_rob_dsp_ret_st_vld_0 = rob_inst_info_r[rob_ret_sel_0[`ROB_ID_WIDTH - 2 : 0]][`ROB_INST_INFO_ST_VLD];
-assign o_rob_dsp_ret_st_id_0  = rob_inst_info_r[rob_ret_sel_0[`ROB_ID_WIDTH - 2 : 0]][`ROB_INST_INFO_ST_ID];
+assign o_rob_dsp_ret_ld_vld_0 = rob_sel_inst_info_0[`ROB_INST_INFO_LBUFF_VLD];
+assign o_rob_dsp_ret_ld_id_0  = rob_sel_inst_info_0[`ROB_INST_INFO_LBUFF_ID];
+assign o_rob_dsp_ret_st_vld_0 = rob_sel_inst_info_0[`ROB_INST_INFO_SBUFF_VLD];
+assign o_rob_dsp_ret_st_id_0  = rob_sel_inst_info_0[`ROB_INST_INFO_SBUFF_ID];
 assign o_rob_dsp_ret_rob_id_1 = rob_ret_sel_1;
-assign o_rob_dsp_ret_ld_vld_1 = rob_inst_info_r[rob_ret_sel_1[`ROB_ID_WIDTH - 2 : 0]][`ROB_INST_INFO_LD_VLD];
-assign o_rob_dsp_ret_ld_id_1  = rob_inst_info_r[rob_ret_sel_1[`ROB_ID_WIDTH - 2 : 0]][`ROB_INST_INFO_LD_ID];
-assign o_rob_dsp_ret_st_vld_1 = rob_inst_info_r[rob_ret_sel_1[`ROB_ID_WIDTH - 2 : 0]][`ROB_INST_INFO_ST_VLD];
-assign o_rob_dsp_ret_st_id_1  = rob_inst_info_r[rob_ret_sel_1[`ROB_ID_WIDTH - 2 : 0]][`ROB_INST_INFO_ST_ID];
+assign o_rob_dsp_ret_ld_vld_1 = rob_sel_inst_info_1[`ROB_INST_INFO_LBUFF_VLD];
+assign o_rob_dsp_ret_ld_id_1  = rob_sel_inst_info_1[`ROB_INST_INFO_LBUFF_ID];
+assign o_rob_dsp_ret_st_vld_1 = rob_sel_inst_info_1[`ROB_INST_INFO_SBUFF_VLD];
+assign o_rob_dsp_ret_st_id_1  = rob_sel_inst_info_1[`ROB_INST_INFO_SBUFF_ID];
 assign o_rob_dsp_ret_rob_id_2 = rob_ret_sel_2;
-assign o_rob_dsp_ret_ld_vld_2 = rob_inst_info_r[rob_ret_sel_2[`ROB_ID_WIDTH - 2 : 0]][`ROB_INST_INFO_LD_VLD];
-assign o_rob_dsp_ret_ld_id_2  = rob_inst_info_r[rob_ret_sel_2[`ROB_ID_WIDTH - 2 : 0]][`ROB_INST_INFO_LD_ID];
-assign o_rob_dsp_ret_st_vld_2 = rob_inst_info_r[rob_ret_sel_2[`ROB_ID_WIDTH - 2 : 0]][`ROB_INST_INFO_ST_VLD];
-assign o_rob_dsp_ret_st_id_2  = rob_inst_info_r[rob_ret_sel_2[`ROB_ID_WIDTH - 2 : 0]][`ROB_INST_INFO_ST_ID];
+assign o_rob_dsp_ret_ld_vld_2 = rob_sel_inst_info_2[`ROB_INST_INFO_LBUFF_VLD];
+assign o_rob_dsp_ret_ld_id_2  = rob_sel_inst_info_2[`ROB_INST_INFO_LBUFF_ID];
+assign o_rob_dsp_ret_st_vld_2 = rob_sel_inst_info_2[`ROB_INST_INFO_SBUFF_VLD];
+assign o_rob_dsp_ret_st_id_2  = rob_sel_inst_info_2[`ROB_INST_INFO_SBUFF_ID];
 assign o_rob_dsp_ret_rob_id_3 = rob_ret_sel_3;
-assign o_rob_dsp_ret_ld_vld_3 = rob_inst_info_r[rob_ret_sel_3[`ROB_ID_WIDTH - 2 : 0]][`ROB_INST_INFO_LD_VLD];
-assign o_rob_dsp_ret_ld_id_3  = rob_inst_info_r[rob_ret_sel_3[`ROB_ID_WIDTH - 2 : 0]][`ROB_INST_INFO_LD_ID];
-assign o_rob_dsp_ret_st_vld_3 = rob_inst_info_r[rob_ret_sel_3[`ROB_ID_WIDTH - 2 : 0]][`ROB_INST_INFO_ST_VLD];
-assign o_rob_dsp_ret_st_id_3  = rob_inst_info_r[rob_ret_sel_3[`ROB_ID_WIDTH - 2 : 0]][`ROB_INST_INFO_ST_ID];
+assign o_rob_dsp_ret_ld_vld_3 = rob_sel_inst_info_3[`ROB_INST_INFO_LBUFF_VLD];
+assign o_rob_dsp_ret_ld_id_3  = rob_sel_inst_info_3[`ROB_INST_INFO_LBUFF_ID];
+assign o_rob_dsp_ret_st_vld_3 = rob_sel_inst_info_3[`ROB_INST_INFO_SBUFF_VLD];
+assign o_rob_dsp_ret_st_id_3  = rob_sel_inst_info_3[`ROB_INST_INFO_SBUFF_ID];
 
 //
-wire o_low_power_state = ((rob_inst_info_r[rob_ret_sel_0[`ROB_ID_WIDTH - 2 : 0]][`ROB_INST_INFO_DECINFO_EXEC_UNIT] == `UOPINFO_ALU) 
-                         & (rob_inst_info_r[rob_ret_sel_0[`ROB_ID_WIDTH - 2 : 0]][`ROB_INST_INFO_DECINFO_ALU_WFI])
-                         & o_rob_ren_ret_vld[0]);
+wire o_low_power_state = ((rob_sel_inst_decinfo_0[`DECINFO_EXEC_UNIT] == `DECINFO_ALU)
+                       & rob_sel_inst_decinfo_0[`DECINFO_ALU_WFI]
+                       & o_rob_ren_ret_vld[0]);
+
+wire rob_fencei_flush = ((rob_sel_inst_decinfo_0[`DECINFO_EXEC_UNIT] === `DECINFO_ALU)
+                      &  rob_sel_inst_decinfo_0[`DECNIFO_ALU_FENCE_I]
+                      & o_rob_ren_ret_vld[0]);
 
 //
-wire rob_fencei_flush = (rob_inst_info_r[rob_ret_sel_0[`ROB_ID_WIDTH - 2 : 0]][`ROB_INST_INFO_DECINFO_EXEC_UNIT] === `UOPINFO_ALU)
-                      & (rob_inst_info_r[rob_ret_sel_0[`ROB_ID_WIDTH - 2 : 0]][`ROB_INST_INFO_DECNIFO_ALU_FENCE_I])
-                      & o_rob_ren_ret_vld[0];
-//
-assign o_rob_itlb_flush = (((rob_inst_info_r[rob_ret_sel_0[`ROB_ID_WIDTH - 2 : 0]][`ROB_INST_INFO_DECINFO_EXEC_UNIT] === `UOPINFO_ALU)
-                        &   (rob_inst_info_r[rob_ret_sel_0[`ROB_ID_WIDTH - 2 : 0]][`ROB_INST_INFO_DECINFO_ALU_SFENCEVMA]))
+assign o_rob_itlb_flush = (((rob_sel_inst_decinfo_0[`DECINFO_EXEC_UNIT] === `DECINFO_ALU)
+                        &   (rob_sel_inst_decinfo_0[`DECINFO_ALU_SFENCE_VMA]))
                         |    rob_fencei_flush);
 assign o_rob_itlb_src1  = ({32{(~rob_fencei_flush)}} & i_exu_rob_fence_src1);
 assign o_rob_itlb_src2  = ({32{(~rob_fencei_flush)}} & i_exu_rob_fence_src2);
@@ -673,34 +709,31 @@ gnrl_dfflr #(
 
 assign o_rob_csr_sfence_vma_flush = (rob_itlb_flush_flag_r & rob_dtlb_flush_flag_r & rob_mmu_flush_flag_r);
 
-
 //
-
-assign o_rob_rsv_csr_ret   = ((rob_inst_info_r[rob_ret_sel_0[`ROB_ID_WIDTH - 2 : 0]][`ROB_INST_INFO_DECINFO_EXEC_UNIT] == `UOPINFO_CSR)
+assign o_rob_rsv_csr_ret   = ((rob_sel_inst_decinfo_0[`DECINFO_EXEC_UNIT] == `DECINFO_CSR)
                            &  o_rob_ren_ret_vld[0]);
-assign o_rob_rsv_fence_ret = ((rob_inst_info_r[rob_ret_sel_0[`ROB_ID_WIDTH - 2 : 0]][`ROB_INST_INFO_DECINFO_EXEC_UNIT] == `UOPINFO_ALU)
-                           &  (rob_inst_info_r[rob_ret_sel_0[`ROB_ID_WIDTH - 2 : 0]][`ROB_INST_INFO_DECINFO_ALU_FENCE]
-                           |   rob_inst_info_r[rob_ret_sel_0[`ROB_ID_WIDTH - 2 : 0]][`ROB_INST_INFO_DECNIFO_ALU_FENCE_I])
+assign o_rob_rsv_fence_ret = ((rob_sel_inst_decinfo_0[`DECINFO_EXEC_UNIT] == `DECINFO_ALU)
+                           &  (rob_sel_inst_decinfo_0[`DECINFO_ALU_FENCE]
+                           |   rob_sel_inst_decinfo_0[`DECNIFO_ALU_FENCE_I])
                            &  o_rob_ren_ret_vld[0]); 
 
-assign o_rob_csr_len  = rob_inst_info_r[rob_ret_sel_0[`ROB_ID_WIDTH - 2 : 0]][`ROB_INST_INFO_LEN];
-assign o_rob_csr_mret = (rob_inst_info_r[rob_ret_sel_0[`ROB_ID_WIDTH - 2 : 0]][`ROB_INST_INFO_DECINFO_EXEC_UNIT] == `UOPINFO_BJP)
-                      & (rob_inst_info_r[rob_ret_sel_0[`ROB_ID_WIDTH - 2 : 0]][`ROB_INST_INFO_DECINFO_BJP_MRET])
+assign o_rob_csr_len  = rob_sel_inst_info_0[`ROB_INST_INFO_LEN];
+assign o_rob_csr_mret = (rob_sel_inst_decinfo_0[`DECINFO_EXEC_UNIT] == `DECINFO_BJP)
+                      & (rob_sel_inst_decinfo_0[`DECINFO_BJP_MRET])
                       & o_rob_ren_ret_vld[0];
-assign o_rob_csr_sret = (rob_inst_info_r[rob_ret_sel_0[`ROB_ID_WIDTH - 2 : 0]][`ROB_INST_INFO_DECINFO_EXEC_UNIT] == `UOPINFO_BJP)
-                      & (rob_inst_info_r[rob_ret_sel_0[`ROB_ID_WIDTH - 2 : 0]][`ROB_INST_INFO_DECINFO_BJP_SRET])
+assign o_rob_csr_sret = (rob_sel_inst_decinfo_0[`DECINFO_EXEC_UNIT] == `DECINFO_BJP)
+                      & (rob_sel_inst_decinfo_0[`ROB_INST_INFO_DECINFO_BJP_SRET])
                       & o_rob_ren_ret_vld[0];
-assign o_rob_csr_uret = (rob_inst_info_r[rob_ret_sel_0[`ROB_ID_WIDTH - 2 : 0]][`ROB_INST_INFO_DECINFO_EXEC_UNIT] == `UOPINFO_BJP)
-                      & (rob_inst_info_r[rob_ret_sel_0[`ROB_ID_WIDTH - 2 : 0]][`ROB_INST_INFO_DECINFO_BJP_URET])
+assign o_rob_csr_uret = (rob_sel_inst_decinfo_0[`DECINFO_EXEC_UNIT] == `DECINFO_BJP)
+                      & (rob_sel_inst_decinfo_0[`DECINFO_BJP_URET])
                       & o_rob_ren_ret_vld[0];
-assign o_rob_csr_wfi  = (rob_inst_info_r[rob_ret_sel_0[`ROB_ID_WIDTH - 2 : 0]][`ROB_INST_INFO_DECINFO_EXEC_UNIT] == `UOPINFO_ALU)
-                      & (rob_inst_info_r[rob_ret_sel_0[`ROB_ID_WIDTH - 2 : 0]][`ROB_INST_INFO_DECINFO_ALU_WFI])
+assign o_rob_csr_wfi  = (rob_sel_inst_decinfo_0[`DECINFO_EXEC_UNIT] == `DECINFO_ALU)
+                      & (rob_sel_inst_decinfo_0[`DECINFO_ALU_WFI])
                       & o_rob_ren_ret_vld[0];
 assign o_rob_csr_int_vld = (rob_status_info_r[rob_ret_sel_0[`ROB_ID_WIDTH - 2 : 0]]);
-assign o_rob_csr_excp_code = (rob_inst_info_r[rob_ret_sel_0[`ROB_ID_WIDTH - 2 : 0]][`ROB_INST_INFO_EXCEPTION_CODE]);
+assign o_rob_csr_excp_code = (rob_excp_r[rob_ret_sel_0[`ROB_ID_WIDTH - 2 : 0]]);
 assign o_rob_csr_exc_vld = (|o_rob_csr_excp_code);
 assign o_rob_exu_s_ret = i_exu_rob_st_ret_done;
-
 
 //  Functions
 function func_rob_old;

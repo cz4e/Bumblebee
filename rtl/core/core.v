@@ -616,6 +616,10 @@ wire [`DECINFO_WIDTH - 1 : 0] o_dsp_rsv_decinfo_bus_0;
 wire [`DECINFO_WIDTH - 1 : 0] o_dsp_rsv_decinfo_bus_1;
 wire [`DECINFO_WIDTH - 1 : 0] o_dsp_rsv_decinfo_bus_2;
 wire [`DECINFO_WIDTH - 1 : 0] o_dsp_rsv_decinfo_bus_3;
+wire [`PREDINFO_WIDTH - 1 : 0]o_dsp_rsv_predinfo_bus_0;
+wire [`PREDINFO_WIDTH - 1 : 0]o_dsp_rsv_predinfo_bus_1;
+wire [`PREDINFO_WIDTH - 1 : 0]o_dsp_rsv_predinfo_bus_2;
+wire [`PREDINFO_WIDTH - 1 : 0]o_dsp_rsv_predinfo_bus_3;
 wire [`RSV_IDX_WIDTH - 1 : 0] o_dsp_rsv_free_entry_0;
 wire [`RSV_IDX_WIDTH - 1 : 0] o_dsp_rsv_free_entry_1;
 wire [`RSV_IDX_WIDTH - 1 : 0] o_dsp_rsv_free_entry_2;
@@ -711,6 +715,14 @@ dsp_top_module dsp (
     .i_dec_dsp_decinfo_bus_1  (o_dec_dsp_decinfo_bus_1),
     .i_dec_dsp_decinfo_bus_2  (o_dec_dsp_decinfo_bus_2),
     .i_dec_dsp_decinfo_bus_3  (o_dec_dsp_decinfo_bus_3),
+    .i_dec_dsp_predinfo_bus_0 (o_dec_dsp_predinfo_bus_0),
+    .i_dec_dsp_predinfo_bus_1 (o_dec_dsp_predinfo_bus_1),
+    .i_dec_dsp_predinfo_bus_2 (o_dec_dsp_predinfo_bus_2),
+    .i_dec_dsp_predinfo_bus_3 (o_dec_dsp_predinfo_bus_3),
+    .i_dec_dsp_excp_code_0    (o_dec_dsp_excp_code_0),
+    .i_dec_dsp_excp_code_1    (o_dec_dsp_excp_code_1),
+    .i_dec_dsp_excp_code_2    (o_dec_dsp_excp_code_2),
+    .i_dec_dsp_excp_code_3    (o_dec_dsp_excp_code_3),
     .i_dec_dsp_instr_0        (o_dec_dsp_instr_0),
     .i_dec_dsp_instr_1        (o_dec_dsp_instr_1),
     .i_dec_dsp_instr_2        (o_dec_dsp_instr_2),
@@ -796,6 +808,14 @@ dsp_top_module dsp (
     .o_dsp_rsv_decinfo_bus_1  (o_dsp_rsv_decinfo_bus_1),
     .o_dsp_rsv_decinfo_bus_2  (o_dsp_rsv_decinfo_bus_2),
     .o_dsp_rsv_decinfo_bus_3  (o_dsp_rsv_decinfo_bus_3),
+    .o_dsp_rsv_predinfo_bus_0 (o_dsp_rsv_predinfo_bus_0),
+    .o_dsp_rsv_predinfo_bus_1 (o_dsp_rsv_predinfo_bus_1),
+    .o_dsp_rsv_predinfo_bus_2 (o_dsp_rsv_predinfo_bus_2),
+    .o_dsp_rsv_predinfo_bus_3 (o_dsp_rsv_predinfo_bus_3),
+    .o_dsp_rsv_excp_code_0    (o_dsp_rsv_excp_code_0),
+    .o_dsp_rsv_excp_code_1    (o_dsp_rsv_excp_code_1),
+    .o_dsp_rsv_excp_code_2    (o_dsp_rsv_excp_code_2),
+    .o_dsp_rsv_excp_code_3    (o_dsp_rsv_excp_code_3),
     .o_dsp_rsv_free_entry_0   (o_dsp_rsv_free_entry_0),
     .o_dsp_rsv_free_entry_1   (o_dsp_rsv_free_entry_1),
     .o_dsp_rsv_free_entry_2   (o_dsp_rsv_free_entry_2),
