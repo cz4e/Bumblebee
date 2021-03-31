@@ -132,7 +132,7 @@ wire i_cs = (~rdy_flag_r);
 
 mem_module #( 
     .DATA_WIDTH(512),
-    .ADDR_WIDTH()
+    .ADDR_WIDTH(33)
 ) mem ( 
     .i_cs       (i_cs),
     .i_wren     (mem_op_r),

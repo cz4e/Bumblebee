@@ -4,7 +4,7 @@ module l2tlb_module (
 	input	[1							: 0]	i_csr_rv_mode,
 	input	[31							: 0]	i_l2tlb_satp,
 	input 										i_l2tlb_rden,
-	input	[`VADDR_WIDTH - 1 			: 0]	i_l2tlb_vaddr,
+	input	[`CORE_PC_WIDTH - 1 		: 0]	i_l2tlb_vaddr,
 	input										i_l2tlb_wren,
 	input	[`PTE_WIDTH - 1 			: 0]	i_l2tlb_pte,
 	input	[21				 			: 0]	i_l2tlb_paddr,

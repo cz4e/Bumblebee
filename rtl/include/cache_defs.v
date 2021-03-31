@@ -17,4 +17,8 @@
 `define DTLB_TAG_WIDTH          28      /*  DTLB tag width.                         */
 `define DTLB_DATA_WIDTH         29      /*  DTLB data width.                        */
 
+`define PTE_CACHE_IDX_WIDTH     9       /*  PTE_CACHE index width.                  */
+`define PTE_CACHE_TAG_WIDTH     23      /*  PTE_CACHE tag width.                    */
+`define PTE_CACHE_DATA_WIDTH    32      /*  PTE_CACHE data width.                   */
+
 `endif  /*  !__INCLUDE_CACHE_DEFS_V__!  */

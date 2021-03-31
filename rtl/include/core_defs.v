@@ -10,4 +10,6 @@
 `define PRF_DATA_WIDTH          32          /*  The width of prf.                   */
 `define PRF_NUMS                128         /*  The number of prf.                  */
 
+`define PTE_WIDTH               32          /*  PTE width.                          */
+
 `endif  /*  !__INCLUDE_CORE_DEFS_V__!   */
